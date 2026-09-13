@@ -1,0 +1,166 @@
+@model IEnumerable<BanSach.Models.ChuDe>
+
+@{
+    ViewData["Title"] = "Quản lý chủ đề";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">
+                <i class="bi bi-bookmark"></i>
+                Quản lý chủ đề
+            </h2>
+
+            <p class="text-muted mb-0">
+                Danh sách các chủ đề sách
+            </p>
+        </div>
+
+        <a asp-area="Admin"
+           asp-controller="ChuDe"
+           asp-action="Create"
+           class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i>
+            Thêm chủ đề
+        </a>
+    </div>
+
+
+    @if (TempData["success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle"></i>
+            @TempData["success"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+        </div>
+    }
+
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                Danh sách chủ đề
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+
+                    <table class="table table-bordered table-hover align-middle">
+
+                        <thead class="table-light">
+
+                            <tr>
+                                <th style="width:100px">
+                                    Mã CĐ
+                                </th>
+
+                                <th>
+                                    Tên chủ đề
+                                </th>
+
+                                <th style="width:250px">
+                                    Thao tác
+                                </th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            @item.MaCD
+                                        </span>
+                                    </td>
+
+                                    <td class="fw-semibold">
+                                        @item.TenChuDe
+                                    </td>
+
+                                    <td>
+
+                                        <a asp-area="Admin"
+                                           asp-controller="ChuDe"
+                                           asp-action="Details"
+                                           asp-route-id="@item.MaCD"
+                                           class="btn btn-info btn-sm text-white">
+
+                                            <i class="bi bi-eye"></i>
+                                            Xem
+                                        </a>
+
+
+                                        <a asp-area="Admin"
+                                           asp-controller="ChuDe"
+                                           asp-action="Edit"
+                                           asp-route-id="@item.MaCD"
+                                           class="btn btn-warning btn-sm">
+
+                                            <i class="bi bi-pencil"></i>
+                                            Sửa
+                                        </a>
+
+
+                                        <a asp-area="Admin"
+                                           asp-controller="ChuDe"
+                                           asp-action="Delete"
+                                           asp-route-id="@item.MaCD"
+                                           class="btn btn-danger btn-sm">
+
+                                            <i class="bi bi-trash"></i>
+                                            Xóa
+                                        </a>
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+
+                    <i class="bi bi-folder-x fs-1 text-muted"></i>
+
+                    <h5 class="mt-3">
+                        Chưa có chủ đề nào
+                    </h5>
+
+                    <a asp-action="Create"
+                       class="btn btn-primary mt-2">
+
+                        <i class="bi bi-plus-circle"></i>
+                        Thêm chủ đề
+
+                    </a>
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+</div>

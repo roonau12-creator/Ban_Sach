@@ -1,0 +1,101 @@
+@model BanSach.Models.ChuDe
+
+@{
+    ViewData["Title"] = "Chi tiết chủ đề";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+
+    <div class="row justify-content-center">
+
+        <div class="col-md-8">
+
+            <div class="card shadow-sm">
+
+                <div class="card-header bg-info text-white">
+
+                    <h4 class="mb-0">
+
+                        <i class="bi bi-info-circle"></i>
+                        Chi tiết chủ đề
+
+                    </h4>
+
+                </div>
+
+
+                <div class="card-body">
+
+                    <div class="row mb-3">
+
+                        <div class="col-md-4 fw-bold">
+                            Mã chủ đề
+                        </div>
+
+                        <div class="col-md-8">
+
+                            <span class="badge bg-secondary fs-6">
+                                @Model.MaCD
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <hr />
+
+
+                    <div class="row mb-3">
+
+                        <div class="col-md-4 fw-bold">
+                            Tên chủ đề
+                        </div>
+
+                        <div class="col-md-8">
+
+                            <span class="fs-5">
+                                @Model.TenChuDe
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-footer">
+
+                    <div class="d-flex justify-content-between">
+
+                        <a asp-action="Index"
+                           class="btn btn-secondary">
+
+                            <i class="bi bi-arrow-left"></i>
+                            Quay lại
+
+                        </a>
+
+
+                        <a asp-action="Edit"
+                           asp-route-id="@Model.MaCD"
+                           class="btn btn-warning">
+
+                            <i class="bi bi-pencil"></i>
+                            Sửa chủ đề
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
