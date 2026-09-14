@@ -1,0 +1,18 @@
+@model BanSach.Models.NhomSach
+@{
+    ViewData["Title"] = "Xóa nhóm sách";
+}
+<div class="card border-danger shadow-sm col-lg-7">
+    <div class="card-header bg-danger text-white"><h4 class="mb-0">Xóa nhóm sách</h4></div>
+    <div class="card-body">
+        <p>Bạn chắc chắn muốn xóa nhóm <strong>@Model.TenNhom</strong>?</p>
+        <form asp-action="Delete" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="MaNhom" />
+            <div class="d-flex justify-content-between">
+                <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                <button class="btn btn-danger" type="submit">Xác nhận xóa</button>
+            </div>
+        </form>
+    </div>
+</div>

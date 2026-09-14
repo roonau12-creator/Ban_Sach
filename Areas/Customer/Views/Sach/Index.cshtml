@@ -1,0 +1,24 @@
+@model IEnumerable<BanSach.Models.Sach>
+@{
+    ViewData["Title"] = "Danh sách sách";
+}
+<h2 class="fw-bold mb-3">Danh sách sách</h2>
+<form method="get" class="row g-2 mb-4">
+    <div class="col-md-4"><input name="q" value="@ViewBag.TuKhoa" class="form-control" placeholder="Tìm kiếm sách..." /></div>
+    <div class="col-md-3"><select name="maCD" class="form-select" asp-items="ViewBag.ChuDes"><option value="">Tất cả chủ đề</option></select></div>
+    <div class="col-md-3"><select name="maNhom" class="form-select" asp-items="ViewBag.NhomSachs"><option value="">Tất cả nhóm</option></select></div>
+    <div class="col-auto"><button class="btn btn-dark">Lọc</button></div>
+</form>
+@if (!Model.Any())
+{
+    <p class="text-muted">Không tìm thấy sách phù hợp.</p>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var s in Model)
+        {
+            <partial name="_SachCard" model="s" />
+        }
+    </div>
+}

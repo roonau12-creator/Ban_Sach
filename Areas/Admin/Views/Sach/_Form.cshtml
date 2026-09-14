@@ -1,0 +1,70 @@
+@model BanSach.Models.ViewModels.SachFormViewModel
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<div class="mb-3">
+    <label asp-for="TenSach" class="form-label fw-bold"></label>
+    <input asp-for="TenSach" class="form-control" />
+    <span asp-validation-for="TenSach" class="text-danger"></span>
+</div>
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <label asp-for="MaCD" class="form-label fw-bold"></label>
+        <select asp-for="MaCD" class="form-select" asp-items="Model.ChuDes"></select>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label asp-for="MaNhom" class="form-label fw-bold"></label>
+        <select asp-for="MaNhom" class="form-select" asp-items="Model.NhomSachs"></select>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label asp-for="MaNXB" class="form-label fw-bold"></label>
+        <select asp-for="MaNXB" class="form-select" asp-items="Model.NhaXuatBans"></select>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <label asp-for="GiaBan" class="form-label fw-bold"></label>
+        <input asp-for="GiaBan" class="form-control" />
+        <span asp-validation-for="GiaBan" class="text-danger"></span>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label asp-for="SoLuongTon" class="form-label fw-bold"></label>
+        <input asp-for="SoLuongTon" class="form-control" />
+        <span asp-validation-for="SoLuongTon" class="text-danger"></span>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label asp-for="NamXB" class="form-label fw-bold"></label>
+        <input asp-for="NamXB" class="form-control" />
+    </div>
+</div>
+<div class="mb-3">
+    <label asp-for="MoTa" class="form-label fw-bold"></label>
+    <textarea asp-for="MoTa" class="form-control" rows="4"></textarea>
+</div>
+<div class="mb-3">
+    <label asp-for="AnhBiaFile" class="form-label fw-bold"></label>
+    <input asp-for="AnhBiaFile" type="file" class="form-control" accept="image/*" />
+    <span asp-validation-for="AnhBiaFile" class="text-danger"></span>
+    @if (!string.IsNullOrEmpty(Model.AnhBia))
+    {
+        <img src="@Model.AnhBia" alt="" class="mt-2" style="height:120px;object-fit:cover" />
+    }
+</div>
+<div class="mb-3">
+    <label class="form-label fw-bold">Tác giả</label>
+    <div class="border rounded p-2" style="max-height:180px;overflow:auto">
+        @foreach (var tg in Model.TacGias)
+        {
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="MaTacGias" value="@tg.Value" id="tg-@tg.Value" @(tg.Selected ? "checked" : "") />
+                <label class="form-check-label" for="tg-@tg.Value">@tg.Text</label>
+            </div>
+        }
+    </div>
+</div>
+<div class="form-check mb-2">
+    <input asp-for="SachMoi" class="form-check-input" />
+    <label asp-for="SachMoi" class="form-check-label"></label>
+</div>
+<div class="form-check mb-3">
+    <input asp-for="NoiBat" class="form-check-input" />
+    <label asp-for="NoiBat" class="form-check-label"></label>
+</div>

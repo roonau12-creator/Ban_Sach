@@ -1,0 +1,33 @@
+@model IEnumerable<BanSach.Models.TacGia>
+@{
+    ViewData["Title"] = "Quản lý tác giả";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold"><i class="bi bi-pen"></i> Tác giả</h2>
+    <a asp-action="Create" class="btn btn-primary">Thêm tác giả</a>
+</div>
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4"><input name="q" value="@ViewBag.TuKhoa" class="form-control" placeholder="Tìm tác giả..." /></div>
+    <div class="col-auto"><button class="btn btn-outline-secondary">Tìm</button></div>
+</form>
+<div class="card shadow-sm">
+    <div class="card-body table-responsive">
+        <table class="table table-hover align-middle">
+            <thead><tr><th>Tên tác giả</th><th>Tiểu sử</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="fw-semibold">@item.TenTacGia</td>
+                    <td class="text-truncate" style="max-width:360px">@item.TieuSu</td>
+                    <td class="text-end">
+                        <a asp-action="Details" asp-route-id="@item.MaTG" class="btn btn-info btn-sm text-white">Xem</a>
+                        <a asp-action="Edit" asp-route-id="@item.MaTG" class="btn btn-warning btn-sm">Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@item.MaTG" class="btn btn-danger btn-sm">Xóa</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

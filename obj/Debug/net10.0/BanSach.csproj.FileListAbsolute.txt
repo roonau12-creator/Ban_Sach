@@ -21,7 +21,6 @@
 /home/roonau/Desktop/Bansach/BanSach/obj/Debug/net10.0/scopedcss/Views/Shared/_Layout.cshtml.rz.scp.css
 /home/roonau/Desktop/Bansach/BanSach/obj/Debug/net10.0/scopedcss/bundle/BanSach.styles.css
 /home/roonau/Desktop/Bansach/BanSach/obj/Debug/net10.0/scopedcss/projectbundle/BanSach.bundle.scp.css
-/home/roonau/Desktop/Bansach/BanSach/obj/Debug/net10.0/compressed/433d42vy19-{0}-b9sayid5wm-b9sayid5wm.gz
 /home/roonau/Desktop/Bansach/BanSach/obj/Debug/net10.0/compressed/8yzqkgysu6-{0}-61n19gt1b8-61n19gt1b8.gz
 /home/roonau/Desktop/Bansach/BanSach/obj/Debug/net10.0/compressed/8fng6j0r14-{0}-xtxxf3hu2r-xtxxf3hu2r.gz
 /home/roonau/Desktop/Bansach/BanSach/obj/Debug/net10.0/compressed/mgo5g3403g-{0}-bqjiyaj88i-bqjiyaj88i.gz
@@ -186,3 +185,5 @@
 /home/roonau/Desktop/Bansach/BanSach/bin/Debug/net10.0/tr/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
 /home/roonau/Desktop/Bansach/BanSach/bin/Debug/net10.0/zh-Hans/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
 /home/roonau/Desktop/Bansach/BanSach/bin/Debug/net10.0/zh-Hant/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
+/home/roonau/Desktop/Bansach/BanSach/obj/Debug/net10.0/BanSach.sourcelink.json
+/home/roonau/Desktop/Bansach/BanSach/obj/Debug/net10.0/compressed/433d42vy19-{0}-42bhq2esj3-42bhq2esj3.gz

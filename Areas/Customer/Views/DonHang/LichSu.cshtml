@@ -1,0 +1,32 @@
+@model IEnumerable<BanSach.Models.DonHang>
+@{
+    ViewData["Title"] = "Lịch sử mua hàng";
+}
+<div class="row">
+    <div class="col-md-3"><partial name="_AccountNav" /></div>
+    <div class="col-md-9">
+        <h3 class="fw-bold mb-3">Lịch sử mua hàng</h3>
+        @if (!Model.Any())
+        {
+            <p class="text-muted">Chưa có đơn hàng.</p>
+        }
+        else
+        {
+            <table class="table align-middle">
+                <thead><tr><th>Mã</th><th>Ngày</th><th>Tổng</th><th>Trạng thái</th><th></th></tr></thead>
+                <tbody>
+                @foreach (var d in Model)
+                {
+                    <tr>
+                        <td>#@d.MaDH</td>
+                        <td>@d.NgayDat.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@HienThi.Tien(d.TongTien)</td>
+                        <td><span class="badge @HienThi.BadgeTrangThaiDon(d.TrangThai)">@HienThi.TrangThaiDon(d.TrangThai)</span></td>
+                        <td><a asp-action="ChiTiet" asp-route-id="@d.MaDH">Chi tiết</a></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

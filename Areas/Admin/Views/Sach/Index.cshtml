@@ -1,0 +1,61 @@
+@model IEnumerable<BanSach.Models.Sach>
+@{
+    ViewData["Title"] = "Quản lý sách";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold"><i class="bi bi-journal"></i> Quản lý sách</h2>
+    <a asp-action="Create" class="btn btn-primary">Thêm sách</a>
+</div>
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3"><input name="q" value="@ViewBag.TuKhoa" class="form-control" placeholder="Tìm sách..." /></div>
+    <div class="col-md-2"><select name="maCD" class="form-select" asp-items="ViewBag.ChuDes"><option value="">Chủ đề</option></select></div>
+    <div class="col-md-2"><select name="maNhom" class="form-select" asp-items="ViewBag.NhomSachs"><option value="">Nhóm</option></select></div>
+    <div class="col-md-3"><select name="maNXB" class="form-select" asp-items="ViewBag.NhaXuatBans"><option value="">Nhà xuất bản</option></select></div>
+    <div class="col-auto"><button class="btn btn-outline-secondary">Lọc</button></div>
+</form>
+<div class="card shadow-sm">
+    <div class="card-body table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Ảnh</th>
+                    <th>Tên sách</th>
+                    <th>Chủ đề</th>
+                    <th>Nhóm</th>
+                    <th>NXB</th>
+                    <th>Giá</th>
+                    <th>Tồn</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td style="width:70px">
+                        @if (!string.IsNullOrEmpty(item.AnhBia))
+                        {
+                            <img src="@item.AnhBia" alt="" style="width:48px;height:64px;object-fit:cover" />
+                        }
+                    </td>
+                    <td>
+                        <div class="fw-semibold">@item.TenSach</div>
+                        @if (item.SachMoi) { <span class="badge bg-success">Mới</span> }
+                        @if (item.NoiBat) { <span class="badge bg-warning text-dark">Nổi bật</span> }
+                    </td>
+                    <td>@item.ChuDe?.TenChuDe</td>
+                    <td>@item.NhomSach?.TenNhom</td>
+                    <td>@item.NhaXuatBan?.TenNXB</td>
+                    <td>@HienThi.Tien(item.GiaBan)</td>
+                    <td>@item.SoLuongTon</td>
+                    <td class="text-end">
+                        <a asp-action="Details" asp-route-id="@item.MaSach" class="btn btn-info btn-sm text-white">Xem</a>
+                        <a asp-action="Edit" asp-route-id="@item.MaSach" class="btn btn-warning btn-sm">Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@item.MaSach" class="btn btn-danger btn-sm">Xóa</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

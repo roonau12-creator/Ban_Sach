@@ -1,0 +1,18 @@
+@model BanSach.Models.TacGia
+@{
+    ViewData["Title"] = "Xóa tác giả";
+}
+<div class="card border-danger shadow-sm col-lg-7">
+    <div class="card-header bg-danger text-white"><h4 class="mb-0">Xóa tác giả</h4></div>
+    <div class="card-body">
+        <p>Xóa tác giả <strong>@Model.TenTacGia</strong>?</p>
+        <form asp-action="Delete" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="MaTG" />
+            <div class="d-flex justify-content-between">
+                <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                <button class="btn btn-danger">Xác nhận xóa</button>
+            </div>
+        </form>
+    </div>
+</div>

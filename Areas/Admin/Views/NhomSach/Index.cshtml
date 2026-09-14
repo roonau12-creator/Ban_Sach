@@ -1,0 +1,61 @@
+@model IEnumerable<BanSach.Models.NhomSach>
+@{
+    ViewData["Title"] = "Quản lý nhóm sách";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold"><i class="bi bi-collection"></i> Quản lý nhóm sách</h2>
+    <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Thêm nhóm</a>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Thứ tự</th>
+                    <th>Tên nhóm</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <form asp-action="SapXep" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.MaNhom" />
+                                <input type="hidden" name="huong" value="up" />
+                                <button class="btn btn-sm btn-outline-secondary" title="Lên"><i class="bi bi-arrow-up"></i></button>
+                            </form>
+                            <form asp-action="SapXep" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.MaNhom" />
+                                <input type="hidden" name="huong" value="down" />
+                                <button class="btn btn-sm btn-outline-secondary" title="Xuống"><i class="bi bi-arrow-down"></i></button>
+                            </form>
+                            <span class="ms-2">@item.ThuTu</span>
+                        </div>
+                    </td>
+                    <td class="fw-semibold">@item.TenNhom</td>
+                    <td>
+                        <form asp-action="BatTat" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@item.MaNhom" />
+                            <button class="btn btn-sm @(item.TrangThai ? "btn-success" : "btn-outline-secondary")">
+                                @(item.TrangThai ? "Đang bật" : "Đã tắt")
+                            </button>
+                        </form>
+                    </td>
+                    <td class="text-end">
+                        <a asp-action="Details" asp-route-id="@item.MaNhom" class="btn btn-info btn-sm text-white">Xem</a>
+                        <a asp-action="Edit" asp-route-id="@item.MaNhom" class="btn btn-warning btn-sm">Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@item.MaNhom" class="btn btn-danger btn-sm">Xóa</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

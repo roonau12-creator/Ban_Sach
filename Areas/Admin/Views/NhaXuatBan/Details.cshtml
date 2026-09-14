@@ -1,0 +1,23 @@
+@model BanSach.Models.NhaXuatBan
+@{
+    ViewData["Title"] = "Chi tiết nhà xuất bản";
+}
+<div class="card shadow-sm col-lg-8">
+    <div class="card-header bg-info text-white"><h4 class="mb-0">Chi tiết nhà xuất bản</h4></div>
+    <div class="card-body">
+        <p><strong>Tên:</strong> @Model.TenNXB</p>
+        <p><strong>Địa chỉ:</strong> @(Model.DiaChi ?? "—")</p>
+        <p><strong>Điện thoại:</strong> @(Model.DienThoai ?? "—")</p>
+        <hr />
+        <h5>Sách</h5>
+        @if (Model.Sachs.Any())
+        {
+            <ul>@foreach (var s in Model.Sachs) { <li>@s.TenSach</li> }</ul>
+        }
+        else { <p class="text-muted">Chưa có sách.</p> }
+    </div>
+    <div class="card-footer d-flex justify-content-between">
+        <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+        <a asp-action="Edit" asp-route-id="@Model.MaNXB" class="btn btn-warning">Sửa</a>
+    </div>
+</div>

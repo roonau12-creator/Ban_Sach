@@ -1,0 +1,33 @@
+@model BanSach.Models.NhomSach
+@{
+    ViewData["Title"] = "Sửa nhóm sách";
+}
+<div class="card shadow-sm col-lg-7">
+    <div class="card-header bg-warning"><h4 class="mb-0">Sửa nhóm sách</h4></div>
+    <div class="card-body">
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="MaNhom" />
+            <input type="hidden" asp-for="ThuTu" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <div class="mb-3">
+                <label asp-for="TenNhom" class="form-label fw-bold"></label>
+                <input asp-for="TenNhom" class="form-control" />
+                <span asp-validation-for="TenNhom" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="MoTa" class="form-label fw-bold"></label>
+                <textarea asp-for="MoTa" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="form-check mb-3">
+                <input asp-for="TrangThai" class="form-check-input" />
+                <label asp-for="TrangThai" class="form-check-label">Hiển thị</label>
+            </div>
+            <div class="d-flex justify-content-between">
+                <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                <button class="btn btn-warning" type="submit">Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts { @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); } }
