@@ -2,10 +2,9 @@
 
 @{
     ViewData["Title"] = "Quản lý chủ đề";
-    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container-fluid mt-4">
+<div class="container-fluid">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -28,20 +27,14 @@
         </a>
     </div>
 
-
-    @if (TempData["success"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show">
-            <i class="bi bi-check-circle"></i>
-            @TempData["success"]
-
-            <button type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert">
-            </button>
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-md-4">
+            <input name="q" value="@ViewBag.TuKhoa" class="form-control" placeholder="Tìm chủ đề..." />
         </div>
-    }
-
+        <div class="col-auto">
+            <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Tìm</button>
+        </div>
+    </form>
 
     <div class="card shadow-sm">
 

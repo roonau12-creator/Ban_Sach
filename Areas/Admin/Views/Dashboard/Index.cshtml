@@ -1,0 +1,66 @@
+@model BanSach.Models.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+<h2 class="fw-bold mb-4"><i class="bi bi-speedometer2"></i> Dashboard</h2>
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card"><div class="card-body"><div class="text-muted">Tổng số sách</div><h3>@Model.TongSach</h3></div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card"><div class="card-body"><div class="text-muted">Tổng khách hàng</div><h3>@Model.TongKhachHang</h3></div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card"><div class="card-body"><div class="text-muted">Tổng đơn hàng</div><h3>@Model.TongDonHang</h3></div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card"><div class="card-body"><div class="text-muted">Doanh thu</div><h3>@HienThi.Tien(Model.DoanhThu)</h3></div></div>
+    </div>
+</div>
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header">Đơn hàng mới</div>
+            <div class="card-body table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>Mã</th><th>Khách</th><th>Ngày</th><th>Tổng</th><th>Trạng thái</th></tr></thead>
+                    <tbody>
+                    @foreach (var d in Model.DonHangMois)
+                    {
+                        <tr>
+                            <td><a asp-controller="DonHang" asp-action="Details" asp-route-id="@d.MaDH">#@d.MaDH</a></td>
+                            <td>@d.KhachHang?.HoTen</td>
+                            <td>@d.NgayDat.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@HienThi.Tien(d.TongTien)</td>
+                            <td><span class="badge @HienThi.BadgeTrangThaiDon(d.TrangThai)">@HienThi.TrangThaiDon(d.TrangThai)</span></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-header">Sách bán chạy</div>
+            <div class="card-body">
+                @if (!Model.SachBanChays.Any())
+                {
+                    <p class="text-muted mb-0">Chưa có dữ liệu.</p>
+                }
+                else
+                {
+                    <ol class="mb-0">
+                        @foreach (var s in Model.SachBanChays)
+                        {
+                            <li class="mb-2">
+                                <div class="fw-semibold">@s.TenSach</div>
+                                <div class="small text-muted">@s.SoLuongBan cuốn — @HienThi.Tien(s.DoanhThu)</div>
+                            </li>
+                        }
+                    </ol>
+                }
+            </div>
+        </div>
+    </div>
+</div>

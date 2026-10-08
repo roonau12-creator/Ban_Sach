@@ -1,0 +1,41 @@
+@model IEnumerable<BanSach.Models.DonHang>
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold"><i class="bi bi-receipt"></i> Đơn hàng</h2>
+</div>
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <select name="trangThai" class="form-select">
+            <option value="">Tất cả trạng thái</option>
+            <option value="@TrangThaiDonHang.ChoXacNhan" selected="@(ViewBag.TrangThai == TrangThaiDonHang.ChoXacNhan)">Chờ xác nhận</option>
+            <option value="@TrangThaiDonHang.DaXacNhan" selected="@(ViewBag.TrangThai == TrangThaiDonHang.DaXacNhan)">Đã xác nhận</option>
+            <option value="@TrangThaiDonHang.DangGiao" selected="@(ViewBag.TrangThai == TrangThaiDonHang.DangGiao)">Đang giao</option>
+            <option value="@TrangThaiDonHang.DaGiao" selected="@(ViewBag.TrangThai == TrangThaiDonHang.DaGiao)">Đã giao</option>
+            <option value="@TrangThaiDonHang.DaHuy" selected="@(ViewBag.TrangThai == TrangThaiDonHang.DaHuy)">Đã hủy</option>
+        </select>
+    </div>
+    <div class="col-auto"><button class="btn btn-outline-secondary">Lọc</button></div>
+</form>
+<div class="card shadow-sm">
+    <div class="card-body table-responsive">
+        <table class="table table-hover align-middle">
+            <thead><tr><th>Mã</th><th>Khách</th><th>Ngày</th><th>Tổng</th><th>TT đơn</th><th>Thanh toán</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var d in Model)
+            {
+                <tr>
+                    <td>#@d.MaDH</td>
+                    <td>@d.KhachHang?.HoTen</td>
+                    <td>@d.NgayDat.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@HienThi.Tien(d.TongTien)</td>
+                    <td><span class="badge @HienThi.BadgeTrangThaiDon(d.TrangThai)">@HienThi.TrangThaiDon(d.TrangThai)</span></td>
+                    <td>@HienThi.ThanhToan(d.TrangThaiThanhToan)</td>
+                    <td class="text-end"><a asp-action="Details" asp-route-id="@d.MaDH" class="btn btn-info btn-sm text-white">Chi tiết</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

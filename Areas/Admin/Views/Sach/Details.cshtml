@@ -1,0 +1,33 @@
+@model BanSach.Models.Sach
+@{
+    ViewData["Title"] = "Chi tiết sách";
+}
+<div class="card shadow-sm">
+    <div class="card-header bg-info text-white"><h4 class="mb-0">@Model.TenSach</h4></div>
+    <div class="card-body row">
+        <div class="col-md-3">
+            @if (!string.IsNullOrEmpty(Model.AnhBia))
+            {
+                <img src="@Model.AnhBia" class="img-fluid rounded" alt="@Model.TenSach" />
+            }
+        </div>
+        <div class="col-md-9">
+            <p><strong>Chủ đề:</strong> @Model.ChuDe?.TenChuDe</p>
+            <p><strong>Nhóm:</strong> @Model.NhomSach?.TenNhom</p>
+            <p><strong>NXB:</strong> @Model.NhaXuatBan?.TenNXB</p>
+            <p><strong>Giá:</strong> @HienThi.Tien(Model.GiaBan)</p>
+            <p><strong>Tồn kho:</strong> @Model.SoLuongTon</p>
+            <p><strong>Năm XB:</strong> @(Model.NamXB?.ToString() ?? "—")</p>
+            <p>
+                @if (Model.SachMoi) { <span class="badge bg-success">Sách mới</span> }
+                @if (Model.NoiBat) { <span class="badge bg-warning text-dark">Nổi bật</span> }
+            </p>
+            <p><strong>Tác giả:</strong> @(string.Join(", ", Model.SachTacGias.Select(x => x.TacGia?.TenTacGia).Where(x => x != null)))</p>
+            <p>@Model.MoTa</p>
+        </div>
+    </div>
+    <div class="card-footer d-flex justify-content-between">
+        <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+        <a asp-action="Edit" asp-route-id="@Model.MaSach" class="btn btn-warning">Sửa</a>
+    </div>
+</div>

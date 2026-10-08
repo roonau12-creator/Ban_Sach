@@ -1,0 +1,20 @@
+@model BanSach.Models.ViewModels.SachFormViewModel
+@{
+    ViewData["Title"] = "Sửa sách";
+}
+<div class="card shadow-sm">
+    <div class="card-header bg-warning"><h4 class="mb-0">Sửa sách</h4></div>
+    <div class="card-body">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="MaSach" />
+            <input type="hidden" asp-for="AnhBia" />
+            <partial name="_Form" model="Model" />
+            <div class="d-flex justify-content-between">
+                <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                <button class="btn btn-warning">Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts { @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); } }

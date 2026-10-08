@@ -1,0 +1,20 @@
+@model BanSach.Models.Sach
+<div class="col-6 col-md-4 col-lg-3">
+    <div class="book-card">
+        <a asp-area="Customer" asp-controller="Sach" asp-action="Details" asp-route-id="@Model.MaSach" class="text-decoration-none text-dark">
+            @if (!string.IsNullOrEmpty(Model.AnhBia))
+            {
+                <img src="@Model.AnhBia" class="book-cover" alt="@Model.TenSach" />
+            }
+            else
+            {
+                <div class="book-cover-placeholder"><i class="bi bi-book"></i></div>
+            }
+            <div class="p-3">
+                <div class="fw-semibold text-truncate" title="@Model.TenSach">@Model.TenSach</div>
+                <div class="small text-muted">@Model.ChuDe?.TenChuDe</div>
+                <div class="price mt-2">@HienThi.Tien(Model.GiaBan)</div>
+            </div>
+        </a>
+    </div>
+</div>

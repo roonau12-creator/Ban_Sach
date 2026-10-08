@@ -1,0 +1,53 @@
+@model BanSach.Models.ViewModels.ThongKeViewModel
+@{
+    ViewData["Title"] = "Thống kê / Báo cáo";
+}
+<h2 class="fw-bold mb-4"><i class="bi bi-graph-up"></i> Thống kê / Báo cáo</h2>
+<form method="get" class="row g-2 mb-4">
+    <div class="col-md-3">
+        <label class="form-label">Từ ngày</label>
+        <input type="date" name="tuNgay" class="form-control" value="@Model.TuNgay.ToString("yyyy-MM-dd")" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Đến ngày</label>
+        <input type="date" name="denNgay" class="form-control" value="@Model.DenNgay.ToString("yyyy-MM-dd")" />
+    </div>
+    <div class="col-auto align-self-end">
+        <button class="btn btn-primary">Xem báo cáo</button>
+    </div>
+</form>
+<div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="card stat-card"><div class="card-body"><div class="text-muted">Tổng đơn</div><h3>@Model.TongDon</h3></div></div></div>
+    <div class="col-md-4"><div class="card stat-card"><div class="card-body"><div class="text-muted">Doanh thu</div><h3>@HienThi.Tien(Model.DoanhThu)</h3></div></div></div>
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="text-muted mb-2">Theo trạng thái</div>
+                @foreach (var kv in Model.DonTheoTrangThai)
+                {
+                    <div>@HienThi.TrangThaiDon(kv.Key): <strong>@kv.Value</strong></div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body table-responsive">
+        <table class="table table-hover align-middle">
+            <thead><tr><th>Mã</th><th>Khách</th><th>Ngày</th><th>Tổng</th><th>Trạng thái</th><th>Thanh toán</th></tr></thead>
+            <tbody>
+            @foreach (var d in Model.DonHangs)
+            {
+                <tr>
+                    <td><a asp-controller="DonHang" asp-action="Details" asp-route-id="@d.MaDH">#@d.MaDH</a></td>
+                    <td>@d.KhachHang?.HoTen</td>
+                    <td>@d.NgayDat.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@HienThi.Tien(d.TongTien)</td>
+                    <td>@HienThi.TrangThaiDon(d.TrangThai)</td>
+                    <td>@HienThi.ThanhToan(d.TrangThaiThanhToan)</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,67 @@
+@using BanSach.Helpers
+@{
+    var hoTen = Context.Session.GetString(SessionKeys.HoTen) ?? Context.Session.GetString(SessionKeys.TenDangNhap) ?? "Admin";
+    string current = $"{ViewContext.RouteData.Values["controller"]}";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Admin BanSach</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="admin-body">
+    <div class="admin-shell">
+        <aside class="admin-sidebar p-3">
+            <h5 class="mb-4"><i class="bi bi-book-half"></i> BanSach Admin</h5>
+            <nav class="d-grid gap-1">
+                <a class="@(current == "Dashboard" ? "active" : "")" asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
+                <a class="@(current == "Sach" ? "active" : "")" asp-area="Admin" asp-controller="Sach" asp-action="Index"><i class="bi bi-journal me-2"></i>Quản lý sách</a>
+                <a class="@(current == "ChuDe" ? "active" : "")" asp-area="Admin" asp-controller="ChuDe" asp-action="Index"><i class="bi bi-bookmark me-2"></i>Chủ đề</a>
+                <a class="@(current == "NhomSach" ? "active" : "")" asp-area="Admin" asp-controller="NhomSach" asp-action="Index"><i class="bi bi-collection me-2"></i>Nhóm sách</a>
+                <a class="@(current == "TacGia" ? "active" : "")" asp-area="Admin" asp-controller="TacGia" asp-action="Index"><i class="bi bi-pen me-2"></i>Tác giả</a>
+                <a class="@(current == "NhaXuatBan" ? "active" : "")" asp-area="Admin" asp-controller="NhaXuatBan" asp-action="Index"><i class="bi bi-building me-2"></i>Nhà xuất bản</a>
+                <a class="@(current == "KhachHang" ? "active" : "")" asp-area="Admin" asp-controller="KhachHang" asp-action="Index"><i class="bi bi-people me-2"></i>Khách hàng</a>
+                <a class="@(current == "DonHang" ? "active" : "")" asp-area="Admin" asp-controller="DonHang" asp-action="Index"><i class="bi bi-receipt me-2"></i>Đơn hàng</a>
+                <a class="@(current == "ThongKe" ? "active" : "")" asp-area="Admin" asp-controller="ThongKe" asp-action="Index"><i class="bi bi-graph-up me-2"></i>Thống kê</a>
+            </nav>
+        </aside>
+        <div class="admin-main">
+            <div class="admin-topbar px-4 py-3 d-flex justify-content-between align-items-center">
+                <div class="text-muted">Xin chào, <strong>@hoTen</strong></div>
+                <div class="d-flex gap-2">
+                    <a class="btn btn-outline-secondary btn-sm" asp-area="Customer" asp-controller="Home" asp-action="Index">Xem cửa hàng</a>
+                    <form asp-area="Customer" asp-controller="TaiKhoan" asp-action="DangXuat" method="post">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-outline-danger btn-sm" type="submit">Đăng xuất</button>
+                    </form>
+                </div>
+            </div>
+            <div class="p-4">
+                @if (TempData["success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show">
+                        <i class="bi bi-check-circle"></i> @TempData["success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        <i class="bi bi-exclamation-circle"></i> @TempData["error"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

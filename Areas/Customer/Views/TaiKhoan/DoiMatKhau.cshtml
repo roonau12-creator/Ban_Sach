@@ -1,0 +1,35 @@
+@model BanSach.Models.ViewModels.DoiMatKhauViewModel
+@{
+    ViewData["Title"] = "Đổi mật khẩu";
+}
+<div class="row">
+    <div class="col-md-3"><partial name="_AccountNav" /></div>
+    <div class="col-md-9">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="fw-bold mb-3">Đổi mật khẩu</h3>
+                <form asp-action="DoiMatKhau" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <div class="mb-3">
+                        <label asp-for="MatKhauHienTai" class="form-label"></label>
+                        <input asp-for="MatKhauHienTai" class="form-control" />
+                        <span asp-validation-for="MatKhauHienTai" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="MatKhauMoi" class="form-label"></label>
+                        <input asp-for="MatKhauMoi" class="form-control" />
+                        <span asp-validation-for="MatKhauMoi" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="XacNhanMatKhau" class="form-label"></label>
+                        <input asp-for="XacNhanMatKhau" class="form-control" />
+                        <span asp-validation-for="XacNhanMatKhau" class="text-danger"></span>
+                    </div>
+                    <button class="btn btn-dark">Đổi mật khẩu</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts { @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); } }

@@ -1,0 +1,55 @@
+@model IEnumerable<BanSach.Models.GioHangItem>
+@{
+    ViewData["Title"] = "Giỏ hàng";
+    var tong = Model.Sum(x => x.ThanhTien);
+}
+<h2 class="fw-bold mb-4">Giỏ hàng</h2>
+@if (!Model.Any())
+{
+    <p class="text-muted">Giỏ hàng trống. <a asp-controller="Sach" asp-action="Index">Tiếp tục mua sách</a></p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>Sách</th><th>Giá</th><th>Số lượng</th><th>Thành tiền</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <div class="d-flex gap-2 align-items-center">
+                            @if (!string.IsNullOrEmpty(item.AnhBia))
+                            {
+                                <img src="@item.AnhBia" alt="" style="width:48px;height:64px;object-fit:cover" />
+                            }
+                            <a asp-controller="Sach" asp-action="Details" asp-route-id="@item.MaSach">@item.TenSach</a>
+                        </div>
+                    </td>
+                    <td>@HienThi.Tien(item.GiaBan)</td>
+                    <td style="width:180px">
+                        <form asp-action="CapNhat" method="post" class="d-flex gap-1">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="maSach" value="@item.MaSach" />
+                            <input type="number" name="soLuong" value="@item.SoLuong" min="1" class="form-control form-control-sm" />
+                            <button class="btn btn-sm btn-outline-secondary">Cập nhật</button>
+                        </form>
+                    </td>
+                    <td>@HienThi.Tien(item.ThanhTien)</td>
+                    <td>
+                        <form asp-action="Xoa" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="maSach" value="@item.MaSach" />
+                            <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="fs-4 fw-bold">Tổng tiền: @HienThi.Tien(tong)</div>
+        <a asp-controller="DonHang" asp-action="DatHang" class="btn btn-dark btn-lg">Đặt hàng</a>
+    </div>
+}
