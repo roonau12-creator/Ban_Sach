@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
+  <rect width="600" height="800" fill="#5b1e2a"/>
+  <circle cx="470" cy="-40" r="220" fill="#ffffff" fill-opacity="0.08"/>
+  <circle cx="80" cy="820" r="180" fill="#000000" fill-opacity="0.12"/>
+  <rect x="34" y="34" width="532" height="732" fill="none" stroke="#f2c9d2" stroke-width="3"/>
+  <text x="300" y="110" text-anchor="middle" fill="#f2c9d2" font-family="Georgia, serif" font-size="18" letter-spacing="6">BANSACH</text>
+  <line x1="170" y1="140" x2="430" y2="140" stroke="#f2c9d2" stroke-width="1.5"/>
+  <text x="300" y="360" text-anchor="middle" fill="#fff5f6" font-family="Georgia, Times New Roman, serif" font-size="54" font-weight="700">S&#7889; &#273;&#7887;</text>
+  <text x="300" y="700" text-anchor="middle" fill="#f2c9d2" font-family="Georgia, serif" font-size="22">V&#361; Tr&#7885;ng Ph&#7909;ng</text>
+</svg>
