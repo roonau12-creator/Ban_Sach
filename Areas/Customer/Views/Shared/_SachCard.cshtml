@@ -1,20 +1,140 @@
 @model BanSach.Models.Sach
-<div class="col-6 col-md-4 col-lg-3">
-    <div class="book-card">
-        <a asp-area="Customer" asp-controller="Sach" asp-action="Details" asp-route-id="@Model.MaSach" class="text-decoration-none text-dark">
-            @if (!string.IsNullOrEmpty(Model.AnhBia))
-            {
-                <img src="@Model.AnhBia" class="book-cover" alt="@Model.TenSach" />
-            }
-            else
-            {
-                <div class="book-cover-placeholder"><i class="bi bi-book"></i></div>
-            }
-            <div class="p-3">
-                <div class="fw-semibold text-truncate" title="@Model.TenSach">@Model.TenSach</div>
-                <div class="small text-muted">@Model.ChuDe?.TenChuDe</div>
-                <div class="price mt-2">@HienThi.Tien(Model.GiaBan)</div>
+
+<div class="col-6 col-md-4 col-lg-3 mb-4">
+    <div class="book-card h-100 shadow-sm rounded overflow-hidden transition-all">
+        <a asp-area="Customer" asp-controller="Sach" asp-action="Details" asp-route-id="@Model.MaSach" 
+           class="text-decoration-none text-dark d-block h-100">
+            
+            <!-- Book Cover Image -->
+            <div class="book-cover-wrapper position-relative overflow-hidden">
+                @if (!string.IsNullOrEmpty(Model.AnhBia))
+                {
+                    <img src="@Model.AnhBia" 
+                         class="book-cover img-fluid w-100" 
+                         alt="@Model.TenSach"
+                         loading="lazy" />
+                    
+                    <!-- Hover Overlay Effect -->
+                    <div class="hover-overlay position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-0 transition-all">
+                        <div class="d-flex align-items-center justify-content-center h-100">
+                            <span class="btn btn-light btn-sm rounded-pill px-3">
+                                <i class="bi bi-eye me-2"></i>Xem chi tiết
+                            </span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="book-cover-placeholder bg-light d-flex align-items-center justify-content-center" 
+                         style="height: 280px;">
+                        <i class="bi bi-book fs-1 text-muted"></i>
+                    </div>
+                }
+            </div>
+            
+            <!-- Book Info -->
+            <div class="p-3 book-info">
+                <div class="fw-semibold text-truncate mb-1" title="@Model.TenSach">
+                    @Model.TenSach
+                </div>
+                
+                @if (Model.ChuDe != null)
+                {
+                    <div class="small text-muted mb-2">
+                        <i class="bi bi-tag me-1"></i>@Model.ChuDe.TenChuDe
+                    </div>
+                }
+                
+                <div class="d-flex align-items-center justify-content-between mt-2">
+                    <div class="price fw-bold text-primary fs-5">
+                        @HienThi.Tien(Model.GiaBan)
+                    </div>
+                    
+                    <!-- Add to Cart Button (optional) -->
+                    <button type="button" 
+                            class="btn btn-outline-primary btn-sm rounded-circle add-to-cart"
+                            data-bs-toggle="tooltip" 
+                            data-bs-placement="top" 
+                            title="Thêm vào giỏ hàng">
+                        <i class="bi bi-cart-plus"></i>
+                    </button>
+                </div>
             </div>
         </a>
     </div>
 </div>
+
+<style>
+    .book-card {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .book-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+        border-color: #dee2e6;
+    }
+    
+    .book-cover-wrapper {
+        height: 280px;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    .book-cover {
+        height: 280px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .book-card:hover .book-cover {
+        transform: scale(1.05);
+    }
+    
+    .hover-overlay {
+        background: rgba(0, 0, 0, 0.6);
+        transition: opacity 0.3s ease;
+    }
+    
+    .book-card:hover .hover-overlay {
+        opacity: 1;
+    }
+    
+    .book-cover-placeholder {
+        height: 280px;
+    }
+    
+    .book-info {
+        min-height: 120px;
+    }
+    
+    .add-to-cart {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    
+    .add-to-cart:hover {
+        background-color: #0d6efd;
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    .transition-all {
+        transition: all 0.3s ease;
+    }
+</style>
+
+<script>
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
