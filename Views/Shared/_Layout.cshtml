@@ -1,48 +1,141 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@using BanSach.Data
+@using BanSach.Helpers
+@inject ApplicationDbContext Db
+@inject SessionGioHang GioHang
+@{
+    var chuDes = Db.ChuDes.OrderBy(x => x.TenChuDe).ToList();
+    var soGio = GioHang.SoLuong();
+    var daDangNhap = Context.Session.GetInt32(SessionKeys.MaTK) != null;
+    var hoTen = Context.Session.GetString(SessionKeys.HoTen) ?? Context.Session.GetString(SessionKeys.TenDangNhap);
+    var vaiTro = Context.Session.GetString(SessionKeys.VaiTro);
+}
+<!DOCTYPE html>
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - BanSach</title>
-    <script type="importmap"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/BanSach.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">BanSach</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+        <nav class="navbar navbar-expand-lg store-navbar">
+            <div class="container">
+                <a class="navbar-brand" asp-area="Customer" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-book-half"></i> BanSach
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#storeNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="collapse navbar-collapse" id="storeNav">
+                    <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-area="Customer" asp-controller="Home" asp-action="Index">Trang chủ</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link" asp-area="Customer" asp-controller="Sach" asp-action="Index">Sách</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="Admin" asp-controller="ChuDe" asp-action="Index">Chu de</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Chủ đề</a>
+                            <ul class="dropdown-menu">
+                                @foreach (var cd in chuDes)
+                                {
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-area="Customer"
+                                           asp-controller="Sach"
+                                           asp-action="Index"
+                                           asp-route-maCD="@cd.MaCD">@cd.TenChuDe</a>
+                                    </li>
+                                }
+                            </ul>
                         </li>
+                    </ul>
+                    <form class="d-flex store-search me-3" asp-area="Customer" asp-controller="Sach" asp-action="Index" method="get">
+                        <input class="form-control me-2" name="q" value="@Context.Request.Query["q"]" placeholder="Tìm sách..." />
+                        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i></button>
+                    </form>
+                    <ul class="navbar-nav align-items-lg-center">
+                        <li class="nav-item me-2">
+                            <a class="nav-link position-relative" asp-area="Customer" asp-controller="GioHang" asp-action="Index">
+                                <i class="bi bi-bag"></i> Giỏ hàng
+                                @if (soGio > 0)
+                                {
+                                    <span class="badge bg-danger rounded-pill cart-badge">@soGio</span>
+                                }
+                            </a>
+                        </li>
+                        @if (daDangNhap)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                    <i class="bi bi-person-circle"></i> @hoTen
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    @if (vaiTro == VaiTroNguoiDung.Admin)
+                                    {
+                                        <li>
+                                            <a class="dropdown-item" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Trang quản trị</a>
+                                        </li>
+                                    }
+                                    <li>
+                                        <a class="dropdown-item" asp-area="Customer" asp-controller="TaiKhoan" asp-action="HoSo">Tài khoản</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-area="Customer" asp-controller="DonHang" asp-action="LichSu">Lịch sử mua hàng</a>
+                                    </li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>
+                                        <form asp-area="Customer" asp-controller="TaiKhoan" asp-action="DangXuat" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item">Đăng xuất</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Customer" asp-controller="TaiKhoan" asp-action="DangNhap">Đăng nhập</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="btn btn-sm btn-dark" asp-area="Customer" asp-controller="TaiKhoan" asp-action="DangKy">Đăng ký</a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+    <div class="container py-4">
+        @if (TempData["success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                <i class="bi bi-check-circle"></i> @TempData["success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show">
+                <i class="bi bi-exclamation-circle"></i> @TempData["error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        <main role="main">
             @RenderBody()
         </main>
     </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - BanSach - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="footer-store">
+        <div class="container d-flex justify-content-between flex-wrap gap-2">
+            <div>&copy; 2026 BanSach — Nhà sách trực tuyến</div>
+            <a class="text-light" asp-area="Customer" asp-controller="Home" asp-action="Privacy">Chính sách</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

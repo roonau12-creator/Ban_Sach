@@ -1,0 +1,18 @@
+@model BanSach.Models.Sach
+@{
+    ViewData["Title"] = "Xóa sách";
+}
+<div class="card border-danger shadow-sm col-lg-7">
+    <div class="card-header bg-danger text-white"><h4 class="mb-0">Xóa sách</h4></div>
+    <div class="card-body">
+        <p>Xóa sách <strong>@Model.TenSach</strong>?</p>
+        <form asp-action="Delete" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="MaSach" />
+            <div class="d-flex justify-content-between">
+                <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                <button class="btn btn-danger">Xác nhận xóa</button>
+            </div>
+        </form>
+    </div>
+</div>

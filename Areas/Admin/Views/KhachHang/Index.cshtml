@@ -1,0 +1,288 @@
+@model IEnumerable<BanSach.Models.KhachHang>
+@{
+    ViewData["Title"] = "Quản lý khách hàng";
+}
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        padding: 1.75rem 2rem;
+        border-radius: 1rem;
+        margin-bottom: 1.75rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.25);
+    }
+    .page-header h2 { margin: 0; font-weight: 700; }
+    .page-header p  { margin: .25rem 0 0; opacity: .9; font-size: .95rem; }
+
+    .search-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 4px 14px rgba(0,0,0,.05);
+        overflow: hidden;
+    }
+    .search-card .card-body { padding: 1.25rem 1.5rem; }
+    .search-input-wrap { position: relative; }
+    .search-input-wrap i {
+        position: absolute;
+        left: 1rem; top: 50%;
+        transform: translateY(-50%);
+        color: #adb5bd;
+    }
+    .search-input-wrap input {
+        padding-left: 2.75rem;
+        border-radius: .75rem;
+        border: 1px solid #e9ecef;
+        height: 44px;
+        transition: border-color .2s, box-shadow .2s;
+    }
+    .search-input-wrap input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102,126,234,.15);
+    }
+    .btn-search {
+        height: 44px;
+        padding: 0 1.5rem;
+        border-radius: .75rem;
+        background: linear-gradient(135deg,#667eea,#764ba2);
+        color: #fff; border: none; font-weight: 600;
+        transition: transform .15s, box-shadow .15s;
+    }
+    .btn-search:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(102,126,234,.35); color:#fff; }
+    .btn-reset {
+        height: 44px;
+        padding: 0 1rem;
+        border-radius: .75rem;
+        color: #6c757d;
+    }
+
+    .panel {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 4px 14px rgba(0,0,0,.05);
+        overflow: hidden;
+    }
+    .panel .card-header {
+        background: #fff;
+        border-bottom: 1px solid #f1f3f5;
+        padding: 1rem 1.25rem;
+        font-weight: 600;
+        color: #343a40;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .panel .card-header i.title-icon { color: #667eea; margin-right: .5rem; }
+
+    .table-modern { margin: 0; }
+    .table-modern thead th {
+        background: #f8f9fc;
+        color: #495057;
+        font-size: .8rem;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        border-bottom: 1px solid #e9ecef;
+        padding: .85rem 1rem;
+    }
+    .table-modern tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-color: #f1f3f5;
+        color: #495057;
+    }
+    .table-modern tbody tr { transition: background .15s ease; }
+    .table-modern tbody tr:hover { background: #f8f9fc; }
+
+    .avatar {
+        width: 42px; height: 42px;
+        border-radius: 50%;
+        display: inline-flex; align-items: center; justify-content: center;
+        color: #fff; font-weight: 700;
+        font-size: 1rem;
+        flex-shrink: 0;
+        text-transform: uppercase;
+    }
+    .avatar.bg-1 { background: linear-gradient(135deg,#4facfe,#00f2fe); }
+    .avatar.bg-2 { background: linear-gradient(135deg,#43e97b,#38f9d7); }
+    .avatar.bg-3 { background: linear-gradient(135deg,#fa709a,#fee140); }
+    .avatar.bg-4 { background: linear-gradient(135deg,#f093fb,#f5576c); }
+    .avatar.bg-5 { background: linear-gradient(135deg,#667eea,#764ba2); }
+
+    .customer-cell { display: flex; align-items: center; gap: .85rem; }
+    .customer-cell .info .name { font-weight: 600; color: #212529; }
+    .customer-cell .info .sub  { font-size: .82rem; color: #6c757d; }
+
+    .btn-status {
+        border: none;
+        padding: .4rem .9rem;
+        border-radius: 999px;
+        font-size: .8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform .15s, box-shadow .15s;
+    }
+    .btn-status.active {
+        background: #e6f9ee;
+        color: #0d8a3f;
+    }
+    .btn-status.locked {
+        background: #fdecec;
+        color: #c0392b;
+    }
+    .btn-status:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,.08); }
+
+    .btn-detail {
+        background: #eef1ff;
+        color: #667eea;
+        border: none;
+        padding: .4rem .9rem;
+        border-radius: .6rem;
+        font-weight: 600;
+        font-size: .85rem;
+        text-decoration: none;
+        transition: background .15s;
+    }
+    .btn-detail:hover { background: #dde3ff; color: #4c5fd1; }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #adb5bd;
+    }
+    .empty-state i { font-size: 2.5rem; margin-bottom: .75rem; display: block; }
+    .empty-state .title { color: #495057; font-weight: 600; margin-bottom: .25rem; }
+
+    .count-badge {
+        background: #eef1ff;
+        color: #667eea;
+        padding: .25rem .7rem;
+        border-radius: 999px;
+        font-size: .8rem;
+        font-weight: 600;
+    }
+</style>
+
+<!-- Header -->
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap">
+    <div>
+        <h2><i class="bi bi-people-fill me-2"></i>Quản lý khách hàng</h2>
+        <p>Quản lý thông tin và trạng thái tài khoản khách hàng.</p>
+    </div>
+    <div class="text-end">
+        <div style="font-size:.9rem; opacity:.9;">Tổng số</div>
+        <div style="font-weight:600; font-size:1.25rem;">@Model.Count() khách hàng</div>
+    </div>
+</div>
+
+<!-- Search -->
+<form method="get" class="search-card mb-4">
+    <div class="card-body">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-7">
+                <div class="search-input-wrap">
+                    <i class="bi bi-search"></i>
+                    <input name="q" value="@ViewBag.TuKhoa" class="form-control" placeholder="Tìm theo tên, email, tài khoản..." />
+                </div>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-search">
+                    <i class="bi bi-search me-1"></i> Tìm kiếm
+                </button>
+            </div>
+            @if (!string.IsNullOrEmpty(ViewBag.TuKhoa as string))
+            {
+                <div class="col-auto">
+                    <a asp-action="Index" class="btn btn-reset">
+                        <i class="bi bi-x-circle"></i> Xóa lọc
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</form>
+
+<!-- Table -->
+<div class="card panel">
+    <div class="card-header">
+        <div>
+            <i class="bi bi-list-ul title-icon"></i> Danh sách khách hàng
+        </div>
+        <span class="count-badge">@Model.Count()</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-modern align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Khách hàng</th>
+                        <th>Tài khoản</th>
+                        <th>Email</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    int row = 0;
+                    @foreach (var item in Model)
+                    {
+                        var bgClass = "bg-" + ((row % 5) + 1);
+                        var initial = string.IsNullOrEmpty(item.HoTen) ? "?" : item.HoTen.Trim().Substring(0, 1);
+                        <tr>
+                            <td>
+                                <div class="customer-cell">
+                                    <div class="avatar @bgClass">@initial</div>
+                                    <div class="info">
+                                        <div class="name">@item.HoTen</div>
+                                        <div class="sub">Mã: #@item.MaKH</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@(item.TaiKhoan?.TenDangNhap ?? "—")</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.TaiKhoan?.Email))
+                                {
+                                    <span><i class="bi bi-envelope text-muted me-1"></i>@item.TaiKhoan.Email</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <form asp-action="BatTat" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@item.MaKH" />
+                                    <button type="submit"
+                                            class="btn-status @(item.TaiKhoan?.TrangThai == true ? "active" : "locked")"
+                                            title="Nhấn để @(item.TaiKhoan?.TrangThai == true ? "khóa" : "kích hoạt")">
+                                        <i class="bi @(item.TaiKhoan?.TrangThai == true ? "bi-check-circle-fill" : "bi-lock-fill") me-1"></i>
+                                        @(item.TaiKhoan?.TrangThai == true ? "Hoạt động" : "Đã khóa")
+                                    </button>
+                                </form>
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Details" asp-route-id="@item.MaKH" class="btn-detail">
+                                    <i class="bi bi-eye me-1"></i>Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                        row++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <i class="bi bi-people"></i>
+                                <div class="title">Không tìm thấy khách hàng</div>
+                                <div>Thử thay đổi từ khóa tìm kiếm hoặc thêm khách hàng mới.</div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,8 +1,424 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model BanSach.Models.ViewModels.HomeViewModel
+@{
+    ViewData["Title"] = "Trang chủ";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    :root {
+        --brand-dark: #2C1810;
+        --brand-brown: #8B4513;
+        --brand-warm: #D4A574;
+        --brand-cream: #FAF7F2;
+        --brand-accent: #C9302C;
+        --brand-gold: #D4A017;
+    }
+
+    body { background: var(--brand-cream); }
+
+    /* ===== HERO ===== */
+    .hero {
+        position: relative;
+        min-height: 520px;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        background:
+            linear-gradient(135deg, rgba(44,24,16,.85) 0%, rgba(139,69,19,.65) 100%),
+            url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1600&q=80') center/cover no-repeat;
+        color: #fff;
+        border-radius: 0 0 2rem 2rem;
+        margin-bottom: 3rem;
+    }
+    .hero::before {
+        content: '';
+        position: absolute; inset: 0;
+        background: radial-gradient(circle at 80% 50%, rgba(212,160,23,.25), transparent 60%);
+        pointer-events: none;
+    }
+    .hero-content { position: relative; z-index: 2; padding: 4rem 2rem; max-width: 720px; }
+    .hero-badge {
+        display: inline-block;
+        background: rgba(255,255,255,.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,.25);
+        padding: .4rem 1rem;
+        border-radius: 999px;
+        font-size: .85rem;
+        font-weight: 500;
+        margin-bottom: 1.25rem;
+    }
+    .hero h1 {
+        font-size: 3.25rem;
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 1rem;
+        letter-spacing: -.5px;
+    }
+    .hero h1 span { color: var(--brand-gold); }
+    .hero p.lead {
+        font-size: 1.15rem;
+        opacity: .92;
+        margin-bottom: 2rem;
+        max-width: 560px;
+    }
+    .hero-search {
+        display: flex;
+        gap: .5rem;
+        max-width: 560px;
+        background: #fff;
+        padding: .5rem;
+        border-radius: 1rem;
+        box-shadow: 0 20px 50px rgba(0,0,0,.25);
+    }
+    .hero-search input {
+        flex: 1;
+        border: none;
+        padding: .9rem 1.25rem;
+        font-size: 1rem;
+        border-radius: .75rem;
+        background: transparent;
+        color: #2C1810;
+    }
+    .hero-search input:focus { outline: none; }
+    .hero-search button {
+        background: linear-gradient(135deg, var(--brand-brown), var(--brand-accent));
+        color: #fff;
+        border: none;
+        padding: 0 1.75rem;
+        border-radius: .75rem;
+        font-weight: 600;
+        display: inline-flex; align-items: center; gap: .4rem;
+        transition: transform .15s, box-shadow .15s;
+    }
+    .hero-search button:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(201,48,44,.4); }
+
+    .hero-stats {
+        display: flex;
+        gap: 2.5rem;
+        margin-top: 2.5rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255,255,255,.15);
+    }
+    .hero-stats .stat .num { font-size: 1.75rem; font-weight: 700; color: var(--brand-gold); }
+    .hero-stats .stat .lbl { font-size: .85rem; opacity: .85; }
+
+    /* ===== SECTION ===== */
+    .section-title {
+        font-weight: 700;
+        color: var(--brand-dark);
+        position: relative;
+        padding-left: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .section-title::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 50%;
+        transform: translateY(-50%);
+        width: 4px; height: 28px;
+        background: linear-gradient(180deg, var(--brand-brown), var(--brand-gold));
+        border-radius: 4px;
+    }
+    .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    .section-head .section-title { margin-bottom: 0; }
+    .see-all {
+        color: var(--brand-brown);
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex; align-items: center; gap: .3rem;
+        transition: gap .2s;
+    }
+    .see-all:hover { gap: .6rem; color: var(--brand-accent); }
+
+    /* ===== CATEGORIES ===== */
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 1rem;
+    }
+    .category-card {
+        background: #fff;
+        border-radius: 1rem;
+        padding: 1.25rem 1rem;
+        text-align: center;
+        text-decoration: none;
+        color: var(--brand-dark);
+        border: 1px solid #f0ebe3;
+        transition: transform .2s, box-shadow .2s, border-color .2s;
+        position: relative;
+        overflow: hidden;
+    }
+    .category-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--brand-brown), var(--brand-gold));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform .3s;
+    }
+    .category-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(139,69,19,.12);
+        border-color: var(--brand-warm);
+    }
+    .category-card:hover::before { transform: scaleX(1); }
+    .category-icon {
+        width: 56px; height: 56px;
+        border-radius: 14px;
+        margin: 0 auto .75rem;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem;
+        color: #fff;
+        background: linear-gradient(135deg, var(--brand-brown), var(--brand-warm));
+    }
+    .category-card:nth-child(2n) .category-icon { background: linear-gradient(135deg,#4facfe,#00f2fe); }
+    .category-card:nth-child(3n) .category-icon { background: linear-gradient(135deg,#f093fb,#f5576c); }
+    .category-card:nth-child(4n) .category-icon { background: linear-gradient(135deg,#43e97b,#38f9d7); }
+    .category-card:nth-child(5n) .category-icon { background: linear-gradient(135deg,#fa709a,#fee140); }
+    .category-card:nth-child(6n) .category-icon { background: linear-gradient(135deg,#667eea,#764ba2); }
+    .category-name { font-weight: 600; font-size: .95rem; }
+
+    /* ===== PROMO BANNER ===== */
+    .promo-banner {
+        background:
+            linear-gradient(135deg, rgba(44,24,16,.9), rgba(139,69,19,.75)),
+            url('https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=1600&q=80') center/cover;
+        color: #fff;
+        border-radius: 1.5rem;
+        padding: 2.5rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+        flex-wrap: wrap;
+        margin: 3rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+    .promo-banner::after {
+        content: '📚';
+        position: absolute;
+        right: -20px; bottom: -40px;
+        font-size: 12rem;
+        opacity: .08;
+    }
+    .promo-banner h3 { font-size: 1.75rem; font-weight: 700; margin-bottom: .5rem; }
+    .promo-banner p  { opacity: .9; margin: 0; max-width: 500px; }
+    .promo-btn {
+        background: var(--brand-gold);
+        color: var(--brand-dark);
+        padding: .75rem 1.75rem;
+        border-radius: .75rem;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex; align-items: center; gap: .5rem;
+        transition: transform .15s, box-shadow .15s;
+        position: relative; z-index: 2;
+    }
+    .promo-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(212,160,23,.4); color: var(--brand-dark); }
+
+    /* ===== FEATURES ===== */
+    .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.25rem;
+        margin: 3rem 0;
+    }
+    .feature {
+        background: #fff;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid #f0ebe3;
+    }
+    .feature-icon {
+        width: 60px; height: 60px;
+        margin: 0 auto 1rem;
+        border-radius: 50%;
+        background: var(--brand-cream);
+        color: var(--brand-brown);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem;
+    }
+    .feature h5 { font-weight: 700; color: var(--brand-dark); margin-bottom: .35rem; }
+    .feature p  { font-size: .88rem; color: #6c757d; margin: 0; }
+
+    /* ===== NEWSLETTER ===== */
+    .newsletter {
+        background: linear-gradient(135deg, var(--brand-dark), var(--brand-brown));
+        color: #fff;
+        border-radius: 1.5rem;
+        padding: 3rem 2rem;
+        text-align: center;
+        margin-top: 3rem;
+    }
+    .newsletter h3 { font-weight: 700; margin-bottom: .5rem; }
+    .newsletter p  { opacity: .85; margin-bottom: 1.5rem; }
+    .newsletter-form {
+        display: flex;
+        max-width: 480px;
+        margin: 0 auto;
+        background: #fff;
+        padding: .4rem;
+        border-radius: 999px;
+    }
+    .newsletter-form input {
+        flex: 1;
+        border: none;
+        padding: .75rem 1.25rem;
+        background: transparent;
+        color: #2C1810;
+    }
+    .newsletter-form input:focus { outline: none; }
+    .newsletter-form button {
+        background: var(--brand-accent);
+        color: #fff;
+        border: none;
+        padding: 0 1.5rem;
+        border-radius: 999px;
+        font-weight: 600;
+    }
+
+    @@media (max-width: 768px) {
+        .hero h1 { font-size: 2.25rem; }
+        .hero-stats { gap: 1.5rem; flex-wrap: wrap; }
+        .promo-banner { text-align: center; justify-content: center; }
+    }
+</style>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+    <div class="hero-content">
+        <span class="hero-badge">✨ Hơn 10.000 đầu sách đang chờ bạn</span>
+        <h1>Chọn <span>sách hay</span>,<br />giao tận tay.</h1>
+        <p class="lead">Khám phá kho tàng tri thức từ hàng nghìn tác phẩm kinh điển đến best-seller hiện đại. Tìm theo chủ đề, tác giả hoặc tên sách chỉ trong vài giây.</p>
+
+        <form asp-area="Customer" asp-controller="Sach" asp-action="Index" method="get" class="hero-search">
+            <input class="form-control" name="q" placeholder="Bạn muốn đọc gì hôm nay?" />
+            <button type="submit">
+                <i class="bi bi-search"></i> Tìm kiếm
+            </button>
+        </form>
+
+        <div class="hero-stats">
+            <div class="stat">
+                <div class="num">10K+</div>
+                <div class="lbl">Đầu sách</div>
+            </div>
+            <div class="stat">
+                <div class="num">500+</div>
+                <div class="lbl">Tác giả</div>
+            </div>
+            <div class="stat">
+                <div class="num">50K+</div>
+                <div class="lbl">Bạn đọc</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+
+    <!-- ===== CATEGORIES ===== -->
+    <section class="mb-5">
+        <div class="section-head">
+            <h3 class="section-title">Khám phá theo chủ đề</h3>
+        </div>
+        <div class="category-grid">
+            @foreach (var cd in Model.ChuDes)
+            {
+                <a class="category-card" asp-controller="Sach" asp-action="Index" asp-route-maCD="@cd.MaCD">
+                    <div class="category-icon">
+                        <i class="bi bi-book"></i>
+                    </div>
+                    <div class="category-name">@cd.TenChuDe</div>
+                </a>
+            }
+        </div>
+    </section>
+
+    <!-- ===== SÁCH MỚI ===== -->
+    <section class="mb-5">
+        <div class="section-head">
+            <h3 class="section-title">Sách mới</h3>
+            <a asp-controller="Sach" asp-action="Index" class="see-all">
+                Xem tất cả <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+        <div class="row g-3">
+            @foreach (var s in Model.SachMois)
+            {
+                <partial name="_SachCard" model="s" />
+            }
+        </div>
+    </section>
+
+    <!-- ===== PROMO BANNER ===== -->
+    <section class="promo-banner">
+        <div>
+            <h3>🎁 Giảm đến 30% sách cuối năm</h3>
+            <p>Ưu đãi đặc biệt cho hàng nghìn đầu sách chọn lọc. Số lượng có hạn — nhanh tay kẻo lỡ!</p>
+        </div>
+        <a asp-controller="Sach" asp-action="Index" class="promo-btn">
+            Mua ngay <i class="bi bi-arrow-right"></i>
+        </a>
+    </section>
+
+    <!-- ===== SÁCH NỔI BẬT ===== -->
+    <section class="mb-5">
+        <div class="section-head">
+            <h3 class="section-title">Sách nổi bật</h3>
+            <a asp-controller="Sach" asp-action="Index" class="see-all">
+                Xem tất cả <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+        <div class="row g-3">
+            @foreach (var s in Model.SachNoiBats)
+            {
+                <partial name="_SachCard" model="s" />
+            }
+        </div>
+    </section>
+
+    <!-- ===== FEATURES ===== -->
+    <section class="features">
+        <div class="feature">
+            <div class="feature-icon"><i class="bi bi-truck"></i></div>
+            <h5>Giao hàng nhanh</h5>
+            <p>Miễn phí ship cho đơn từ 200K, giao trong 2–4 ngày.</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
+            <h5>Sách chính hãng</h5>
+            <p>100% sách thật, có nguồn gốc rõ ràng từ NXB.</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon"><i class="bi bi-arrow-repeat"></i></div>
+            <h5>Đổi trả dễ dàng</h5>
+            <p>Đổi trả miễn phí trong 7 ngày nếu sách lỗi.</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon"><i class="bi bi-headset"></i></div>
+            <h5>Hỗ trợ 24/7</h5>
+            <p>Đội ngũ tận tâm luôn sẵn sàng giải đáp.</p>
+        </div>
+    </section>
+
+    <!-- ===== NEWSLETTER ===== -->
+    <section class="newsletter">
+        <h3>📬 Đăng ký nhận tin</h3>
+        <p>Nhận ngay ưu đãi độc quyền và gợi ý sách hay mỗi tuần.</p>
+        <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Cảm ơn bạn đã đăng ký!');">
+            <input type="email" placeholder="Nhập email của bạn..." required />
+            <button type="submit">Đăng ký</button>
+        </form>
+    </section>
+
 </div>

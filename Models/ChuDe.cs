@@ -1,18 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 
 namespace BanSach.Models
 {
-     public class ChuDe
+    public class ChuDe
     {
         [Key]
         public int MaCD { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Vui lòng nhập tên chủ đề")]
         [StringLength(100)]
-        public string TenChuDe { get; set; }
+        [Display(Name = "Tên chủ đề")]
+        public string TenChuDe { get; set; } = string.Empty;
+
+        public ICollection<Sach> Sachs { get; set; } = new List<Sach>();
     }
 }

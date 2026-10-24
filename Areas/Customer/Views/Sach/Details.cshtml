@@ -1,0 +1,48 @@
+@model BanSach.Models.Sach
+@{
+    ViewData["Title"] = Model.TenSach;
+}
+<div class="row g-4">
+    <div class="col-md-4">
+        @if (!string.IsNullOrEmpty(Model.AnhBia))
+        {
+            <img src="@Model.AnhBia" class="img-fluid rounded shadow-sm" alt="@Model.TenSach" />
+        }
+        else
+        {
+            <div class="book-cover-placeholder rounded"><i class="bi bi-book"></i></div>
+        }
+    </div>
+    <div class="col-md-8">
+        <h1 class="fw-bold">@Model.TenSach</h1>
+        <p class="text-muted">
+            @Model.ChuDe?.TenChuDe · @Model.NhomSach?.TenNhom · @Model.NhaXuatBan?.TenNXB
+        </p>
+        @{
+            var tacGia = string.Join(", ", Model.SachTacGias.Select(x => x.TacGia?.TenTacGia).Where(x => !string.IsNullOrEmpty(x)));
+        }
+        <p>
+            <strong>Tác giả:</strong>
+            @(string.IsNullOrEmpty(tacGia) ? "Đang cập nhật" : tacGia)
+        </p>
+        <p><strong>Năm XB:</strong> @(Model.NamXB?.ToString() ?? "—")</p>
+        <p class="price fs-3">@HienThi.Tien(Model.GiaBan)</p>
+        <p>Còn lại: <strong>@Model.SoLuongTon</strong> cuốn</p>
+        @if (Model.SachMoi) { <span class="badge bg-success">Sách mới</span> }
+        @if (Model.NoiBat) { <span class="badge bg-warning text-dark">Nổi bật</span> }
+        <p class="mt-3">@Model.MoTa</p>
+        @if (Model.SoLuongTon > 0)
+        {
+            <form asp-controller="GioHang" asp-action="Them" method="post" class="d-flex gap-2 mt-3" style="max-width:320px">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="maSach" value="@Model.MaSach" />
+                <input type="number" name="soLuong" value="1" min="1" max="@Model.SoLuongTon" class="form-control" />
+                <button class="btn btn-dark">Thêm vào giỏ</button>
+            </form>
+        }
+        else
+        {
+            <div class="alert alert-warning mt-3">Sách tạm hết hàng.</div>
+        }
+    </div>
+</div>

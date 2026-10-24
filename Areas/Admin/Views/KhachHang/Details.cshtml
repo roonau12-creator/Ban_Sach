@@ -1,0 +1,26 @@
+@model BanSach.Models.KhachHang
+@{
+    ViewData["Title"] = "Chi tiết khách hàng";
+}
+<div class="card shadow-sm mb-3">
+    <div class="card-header bg-info text-white"><h4 class="mb-0">@Model.HoTen</h4></div>
+    <div class="card-body">
+        <p><strong>Tài khoản:</strong> @Model.TaiKhoan?.TenDangNhap</p>
+        <p><strong>Email:</strong> @Model.TaiKhoan?.Email</p>
+        <p><strong>Trạng thái:</strong> @(Model.TaiKhoan?.TrangThai == true ? "Hoạt động" : "Đã khóa")</p>
+        <h5 class="mt-4">Địa chỉ</h5>
+        <ul>@foreach (var d in Model.DiaChis) { <li>@d.DiaChiChiTiet @(d.MacDinh ? "(mặc định)" : "")</li> }</ul>
+        <h5>Số điện thoại</h5>
+        <ul>@foreach (var s in Model.SoDienThoais) { <li>@s.SoDT @(s.MacDinh ? "(mặc định)" : "")</li> }</ul>
+        <h5>Đơn hàng</h5>
+        <ul>
+            @foreach (var d in Model.DonHangs.OrderByDescending(x => x.NgayDat))
+            {
+                <li><a asp-controller="DonHang" asp-action="Details" asp-route-id="@d.MaDH">#@d.MaDH</a> — @HienThi.Tien(d.TongTien) — @HienThi.TrangThaiDon(d.TrangThai)</li>
+            }
+        </ul>
+    </div>
+    <div class="card-footer">
+        <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+    </div>
+</div>

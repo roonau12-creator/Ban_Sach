@@ -1,0 +1,46 @@
+@model BanSach.Models.DonHang
+@{
+    ViewData["Title"] = $"Đơn #{Model.MaDH}";
+}
+<div class="row">
+    <div class="col-md-3"><partial name="_AccountNav" /></div>
+    <div class="col-md-9">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="fw-bold">Đơn #@Model.MaDH</h3>
+                <p>
+                    <span class="badge @HienThi.BadgeTrangThaiDon(Model.TrangThai)">@HienThi.TrangThaiDon(Model.TrangThai)</span>
+                    · @HienThi.PhuongThuc(Model.PhuongThucThanhToan)
+                    · @HienThi.ThanhToan(Model.TrangThaiThanhToan)
+                </p>
+                <p><strong>Ngày đặt:</strong> @Model.NgayDat.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+                <p><strong>Giao đến:</strong> @Model.DiaChiGiao — @Model.SoDienThoaiGiao</p>
+                <p><strong>Giao hàng:</strong> @HienThi.GiaoHang(Model.GiaoHang?.TrangThai)</p>
+                <table class="table">
+                    <thead><tr><th>Sách</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+                    <tbody>
+                    @foreach (var ct in Model.ChiTietDonHangs)
+                    {
+                        <tr>
+                            <td>@ct.Sach?.TenSach</td>
+                            <td>@ct.SoLuong</td>
+                            <td>@HienThi.Tien(ct.DonGia)</td>
+                            <td>@HienThi.Tien(ct.DonGia * ct.SoLuong)</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+                <div class="fw-bold fs-5 mb-3">Tổng: @HienThi.Tien(Model.TongTien)</div>
+                @if (Model.TrangThai == TrangThaiDonHang.ChoXacNhan)
+                {
+                    <form asp-action="Huy" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.MaDH" />
+                        <button class="btn btn-outline-danger" onclick="return confirm('Hủy đơn này?')">Hủy đơn</button>
+                    </form>
+                }
+                <a asp-action="LichSu" class="btn btn-link">Quay lại lịch sử</a>
+            </div>
+        </div>
+    </div>
+</div>

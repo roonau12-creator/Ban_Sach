@@ -1,0 +1,89 @@
+@model BanSach.Models.DonHang
+@{
+    ViewData["Title"] = $"Đơn #{Model.MaDH}";
+}
+<div class="card shadow-sm mb-3">
+    <div class="card-header d-flex justify-content-between">
+        <h4 class="mb-0">Đơn #@Model.MaDH</h4>
+        <span class="badge @HienThi.BadgeTrangThaiDon(Model.TrangThai)">@HienThi.TrangThaiDon(Model.TrangThai)</span>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Khách:</strong> @Model.KhachHang?.HoTen</p>
+                <p><strong>Ngày đặt:</strong> @Model.NgayDat.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+                <p><strong>Địa chỉ:</strong> @Model.DiaChiGiao</p>
+                <p><strong>SĐT:</strong> @Model.SoDienThoaiGiao</p>
+                <p><strong>Ghi chú:</strong> @(Model.GhiChu ?? "—")</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Thanh toán:</strong> @HienThi.PhuongThuc(Model.PhuongThucThanhToan) — @HienThi.ThanhToan(Model.TrangThaiThanhToan)</p>
+                <p><strong>Giao hàng:</strong> @HienThi.GiaoHang(Model.GiaoHang?.TrangThai)</p>
+                <p><strong>Ngày giao:</strong> @(Model.GiaoHang?.NgayGiao?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "—")</p>
+                <p><strong>Ghi chú giao:</strong> @(Model.GiaoHang?.GhiChu ?? "—")</p>
+            </div>
+        </div>
+        <table class="table">
+            <thead><tr><th>Sách</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+            <tbody>
+            @foreach (var ct in Model.ChiTietDonHangs)
+            {
+                <tr>
+                    <td>@ct.Sach?.TenSach</td>
+                    <td>@ct.SoLuong</td>
+                    <td>@HienThi.Tien(ct.DonGia)</td>
+                    <td>@HienThi.Tien(ct.DonGia * ct.SoLuong)</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        <div class="text-end fw-bold fs-5">Tổng: @HienThi.Tien(Model.TongTien)</div>
+        <hr />
+        <div class="row g-3">
+            <div class="col-md-4">
+                <form asp-action="CapNhatTrangThai" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.MaDH" />
+                    <label class="form-label fw-bold">Trạng thái đơn</label>
+                    <select name="trangThai" class="form-select mb-2">
+                        <option value="@TrangThaiDonHang.ChoXacNhan">Chờ xác nhận</option>
+                        <option value="@TrangThaiDonHang.DaXacNhan">Đã xác nhận</option>
+                        <option value="@TrangThaiDonHang.DangGiao">Đang giao</option>
+                        <option value="@TrangThaiDonHang.DaGiao">Đã giao</option>
+                        <option value="@TrangThaiDonHang.DaHuy">Hủy đơn</option>
+                    </select>
+                    <button class="btn btn-primary w-100">Cập nhật trạng thái</button>
+                </form>
+            </div>
+            <div class="col-md-4">
+                <form asp-action="CapNhatThanhToan" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.MaDH" />
+                    <label class="form-label fw-bold">Thanh toán</label>
+                    <select name="trangThaiThanhToan" class="form-select mb-2">
+                        <option value="@TrangThaiThanhToan.ChuaThanhToan">Chưa thanh toán</option>
+                        <option value="@TrangThaiThanhToan.DaThanhToan">Đã thanh toán</option>
+                    </select>
+                    <button class="btn btn-success w-100">Cập nhật thanh toán</button>
+                </form>
+            </div>
+            <div class="col-md-4">
+                <form asp-action="CapNhatGiaoHang" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.MaDH" />
+                    <label class="form-label fw-bold">Giao hàng</label>
+                    <select name="trangThai" class="form-select mb-2">
+                        <option value="@TrangThaiGiaoHang.ChoGiao">Chờ giao</option>
+                        <option value="@TrangThaiGiaoHang.DangGiao">Đang giao</option>
+                        <option value="@TrangThaiGiaoHang.DaGiao">Đã giao</option>
+                    </select>
+                    <input name="ghiChu" class="form-control mb-2" placeholder="Ghi chú giao hàng" value="@Model.GiaoHang?.GhiChu" />
+                    <button class="btn btn-outline-primary w-100">Cập nhật giao hàng</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+    </div>
+</div>

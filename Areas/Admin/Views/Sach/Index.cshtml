@@ -1,0 +1,343 @@
+@model IEnumerable<BanSach.Models.Sach>
+@{
+    ViewData["Title"] = "Quản lý sách";
+}
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        padding: 1.75rem 2rem;
+        border-radius: 1rem;
+        margin-bottom: 1.75rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.25);
+    }
+    .page-header h2 { margin: 0; font-weight: 700; }
+    .page-header p  { margin: .25rem 0 0; opacity: .9; font-size: .95rem; }
+    .btn-add {
+        background: #fff;
+        color: #667eea;
+        border: none;
+        padding: .6rem 1.25rem;
+        border-radius: .75rem;
+        font-weight: 600;
+        display: inline-flex; align-items: center; gap: .4rem;
+        transition: transform .15s, box-shadow .15s;
+        text-decoration: none;
+    }
+    .btn-add:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,.15); color:#4c5fd1; }
+
+    .filter-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 4px 14px rgba(0,0,0,.05);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    .filter-card .card-body { padding: 1.25rem 1.5rem; }
+    .search-input-wrap { position: relative; }
+    .search-input-wrap i {
+        position: absolute;
+        left: 1rem; top: 50%;
+        transform: translateY(-50%);
+        color: #adb5bd;
+    }
+    .search-input-wrap input,
+    .filter-card .form-select {
+        padding-left: 2.75rem;
+        border-radius: .75rem;
+        border: 1px solid #e9ecef;
+        height: 44px;
+        transition: border-color .2s, box-shadow .2s;
+    }
+    .filter-card .form-select { padding-left: 1rem; }
+    .search-input-wrap input:focus,
+    .filter-card .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102,126,234,.15);
+    }
+    .btn-filter {
+        height: 44px;
+        padding: 0 1.5rem;
+        border-radius: .75rem;
+        background: linear-gradient(135deg,#667eea,#764ba2);
+        color: #fff; border: none; font-weight: 600;
+        transition: transform .15s, box-shadow .15s;
+    }
+    .btn-filter:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(102,126,234,.35); color:#fff; }
+    .btn-reset {
+        height: 44px;
+        padding: 0 1rem;
+        border-radius: .75rem;
+        color: #6c757d;
+    }
+
+    .panel {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 4px 14px rgba(0,0,0,.05);
+        overflow: hidden;
+    }
+    .panel .card-header {
+        background: #fff;
+        border-bottom: 1px solid #f1f3f5;
+        padding: 1rem 1.25rem;
+        font-weight: 600;
+        color: #343a40;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .panel .card-header i.title-icon { color: #667eea; margin-right: .5rem; }
+
+    .table-modern { margin: 0; }
+    .table-modern thead th {
+        background: #f8f9fc;
+        color: #495057;
+        font-size: .78rem;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        border-bottom: 1px solid #e9ecef;
+        padding: .85rem 1rem;
+        white-space: nowrap;
+    }
+    .table-modern tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-color: #f1f3f5;
+        color: #495057;
+    }
+    .table-modern tbody tr { transition: background .15s ease; }
+    .table-modern tbody tr:hover { background: #f8f9fc; }
+
+    /* Book cover */
+    .book-cover {
+        width: 56px; height: 78px;
+        border-radius: .5rem;
+        object-fit: cover;
+        box-shadow: 0 4px 10px rgba(0,0,0,.12);
+        transition: transform .2s;
+    }
+    .book-cover:hover { transform: scale(1.08); }
+    .book-cover-placeholder {
+        width: 56px; height: 78px;
+        border-radius: .5rem;
+        background: linear-gradient(135deg,#eef1ff,#dde3ff);
+        display: flex; align-items: center; justify-content: center;
+        color: #667eea;
+        font-size: 1.5rem;
+    }
+
+    .book-title { font-weight: 600; color: #212529; margin-bottom: .25rem; }
+    .book-code  { font-size: .78rem; color: #adb5bd; }
+
+    .badge-new {
+        background: linear-gradient(135deg,#43e97b,#38f9d7);
+        color: #fff;
+        padding: .25rem .6rem;
+        border-radius: 999px;
+        font-size: .7rem;
+        font-weight: 600;
+        margin-right: .25rem;
+    }
+    .badge-hot {
+        background: linear-gradient(135deg,#f6d365,#fda085);
+        color: #fff;
+        padding: .25rem .6rem;
+        border-radius: 999px;
+        font-size: .7rem;
+        font-weight: 600;
+    }
+
+    .price { font-weight: 700; color: #f5576c; white-space: nowrap; }
+
+    .stock-pill {
+        display: inline-block;
+        padding: .3rem .7rem;
+        border-radius: 999px;
+        font-size: .8rem;
+        font-weight: 600;
+        min-width: 48px;
+        text-align: center;
+    }
+    .stock-low    { background: #fdecec; color: #c0392b; }
+    .stock-medium { background: #fff7e6; color: #d35400; }
+    .stock-high   { background: #e6f9ee; color: #0d8a3f; }
+
+    .action-btn {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 34px; height: 34px;
+        border-radius: .6rem;
+        border: none;
+        text-decoration: none;
+        transition: transform .15s, box-shadow .15s;
+        margin-left: .2rem;
+    }
+    .action-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,.1); }
+    .action-view   { background: #eef1ff; color: #667eea; }
+    .action-edit   { background: #fff7e6; color: #d35400; }
+    .action-delete { background: #fdecec; color: #c0392b; }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #adb5bd;
+    }
+    .empty-state i { font-size: 2.5rem; margin-bottom: .75rem; display: block; }
+    .empty-state .title { color: #495057; font-weight: 600; margin-bottom: .25rem; }
+
+    .count-badge {
+        background: #eef1ff;
+        color: #667eea;
+        padding: .25rem .7rem;
+        border-radius: 999px;
+        font-size: .8rem;
+        font-weight: 600;
+    }
+</style>
+
+<!-- Header -->
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <h2><i class="bi bi-journal-bookmark-fill me-2"></i>Quản lý sách</h2>
+        <p>Quản lý danh mục sách, tồn kho và thông tin xuất bản.</p>
+    </div>
+    <a asp-action="Create" class="btn-add">
+        <i class="bi bi-plus-circle-fill"></i> Thêm sách mới
+    </a>
+</div>
+
+<!-- Filter -->
+<form method="get" class="filter-card">
+    <div class="card-body">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-3">
+                <div class="search-input-wrap">
+                    <i class="bi bi-search"></i>
+                    <input name="q" value="@ViewBag.TuKhoa" class="form-control" placeholder="Tìm tên sách, tác giả..." />
+                </div>
+            </div>
+            <div class="col-md-2">
+                <select name="maCD" class="form-select" asp-items="ViewBag.ChuDes">
+                    <option value="">Tất cả chủ đề</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="maNhom" class="form-select" asp-items="ViewBag.NhomSachs">
+                    <option value="">Tất cả nhóm</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="maNXB" class="form-select" asp-items="ViewBag.NhaXuatBans">
+                    <option value="">Tất cả NXB</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-filter">
+                    <i class="bi bi-funnel-fill me-1"></i> Lọc
+                </button>
+            </div>
+            @if (!string.IsNullOrEmpty(ViewBag.TuKhoa as string))
+            {
+                <div class="col-auto">
+                    <a asp-action="Index" class="btn btn-reset">
+                        <i class="bi bi-x-circle"></i> Xóa lọc
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</form>
+
+<!-- Table -->
+<div class="card panel">
+    <div class="card-header">
+        <div>
+            <i class="bi bi-list-ul title-icon"></i> Danh sách sách
+        </div>
+        <span class="count-badge">@Model.Count() cuốn</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-modern align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:80px">Ảnh</th>
+                        <th>Tên sách</th>
+                        <th>Chủ đề</th>
+                        <th>Nhóm</th>
+                        <th>NXB</th>
+                        <th class="text-end">Giá bán</th>
+                        <th class="text-center">Tồn kho</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        string stockClass = item.SoLuongTon < 5 ? "stock-low"
+                                        : item.SoLuongTon <= 20 ? "stock-medium" : "stock-high";
+                        <tr>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.AnhBia))
+                                {
+                                    <img src="@item.AnhBia" alt="@item.TenSach" class="book-cover" />
+                                }
+                                else
+                                {
+                                    <div class="book-cover-placeholder">
+                                        <i class="bi bi-book"></i>
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                <div class="book-title">
+                                    @item.TenSach
+                                </div>
+                                <div class="book-code">Mã: #@item.MaSach</div>
+                                <div class="mt-1">
+                                    @if (item.SachMoi) { <span class="badge-new"><i class="bi bi-stars"></i> Mới</span> }
+                                    @if (item.NoiBat) { <span class="badge-hot"><i class="bi bi-fire"></i> Nổi bật</span> }
+                                </div>
+                            </td>
+                            <td>@(item.ChuDe?.TenChuDe ?? "—")</td>
+                            <td>@(item.NhomSach?.TenNhom ?? "—")</td>
+                            <td>@(item.NhaXuatBan?.TenNXB ?? "—")</td>
+                            <td class="text-end"><span class="price">@HienThi.Tien(item.GiaBan)</span></td>
+                            <td class="text-center">
+                                <span class="stock-pill @stockClass">@item.SoLuongTon</span>
+                            </td>
+                            <td class="text-end text-nowrap">
+                                <a asp-action="Details" asp-route-id="@item.MaSach"
+                                   class="action-btn action-view" title="Xem chi tiết">
+                                    <i class="bi bi-eye-fill"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@item.MaSach"
+                                   class="action-btn action-edit" title="Sửa">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.MaSach"
+                                   class="action-btn action-delete" title="Xóa">
+                                    <i class="bi bi-trash-fill"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state">
+                                <i class="bi bi-journal-x"></i>
+                                <div class="title">Chưa có sách nào</div>
+                                <div>Thay đổi bộ lọc hoặc thêm sách mới để bắt đầu.</div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

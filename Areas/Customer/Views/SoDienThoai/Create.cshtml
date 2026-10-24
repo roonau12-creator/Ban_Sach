@@ -1,0 +1,29 @@
+@model BanSach.Models.SoDienThoai
+@{
+    ViewData["Title"] = "Thêm số điện thoại";
+}
+<div class="row">
+    <div class="col-md-3"><partial name="_AccountNav" /></div>
+    <div class="col-md-9">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="fw-bold mb-3">Thêm số điện thoại</h3>
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label asp-for="SoDT" class="form-label"></label>
+                        <input asp-for="SoDT" class="form-control" />
+                        <span asp-validation-for="SoDT" class="text-danger"></span>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input asp-for="MacDinh" class="form-check-input" />
+                        <label asp-for="MacDinh" class="form-check-label"></label>
+                    </div>
+                    <button class="btn btn-dark">Lưu</button>
+                    <a asp-action="Index" class="btn btn-link">Hủy</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts { @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); } }
