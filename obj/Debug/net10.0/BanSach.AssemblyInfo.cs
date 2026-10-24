@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BanSach")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+35673ddb427910ce3a2a6467036df10c3eae524c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+19d353e2e7f3536a6229c826ec13c96326d04db1")]
 [assembly: System.Reflection.AssemblyProductAttribute("BanSach")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BanSach")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
