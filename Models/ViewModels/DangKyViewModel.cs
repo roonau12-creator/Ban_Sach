@@ -16,6 +16,7 @@ namespace BanSach.Models.ViewModels
 
         [Required(ErrorMessage = "Vui lòng nhập email")]
         [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+        [StringLength(150, ErrorMessage = "Email không được vượt quá 150 ký tự")]
         [Display(Name = "Email")]
         public string Email { get; set; } = string.Empty;
 
