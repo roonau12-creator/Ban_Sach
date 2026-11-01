@@ -434,6 +434,54 @@ namespace BanSach.Migrations
                     b.ToTable("TaiKhoans");
                 });
 
+            modelBuilder.Entity("BanSach.Models.ThanhToan", b =>
+                {
+                    b.Property<int>("MaTT")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("MaTT"));
+
+                    b.Property<int>("MaDH")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MaGiaoDich")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("NgayCapNhat")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("NgayTao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("NgayThanhToan")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PhuongThuc")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<decimal>("SoTien")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.HasKey("MaTT");
+
+                    b.HasIndex("MaDH")
+                        .IsUnique();
+
+                    b.HasIndex("MaGiaoDich")
+                        .IsUnique();
+
+                    b.ToTable("ThanhToans");
+                });
+
             modelBuilder.Entity("BanSach.Models.ChiTietDonHang", b =>
                 {
                     b.HasOne("BanSach.Models.DonHang", "DonHang")
@@ -568,6 +616,17 @@ namespace BanSach.Migrations
                     b.Navigation("KhachHang");
                 });
 
+            modelBuilder.Entity("BanSach.Models.ThanhToan", b =>
+                {
+                    b.HasOne("BanSach.Models.DonHang", "DonHang")
+                        .WithOne("ThanhToan")
+                        .HasForeignKey("BanSach.Models.ThanhToan", "MaDH")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DonHang");
+                });
+
             modelBuilder.Entity("BanSach.Models.ChuDe", b =>
                 {
                     b.Navigation("Sachs");
@@ -578,6 +637,8 @@ namespace BanSach.Migrations
                     b.Navigation("ChiTietDonHangs");
 
                     b.Navigation("GiaoHang");
+
+                    b.Navigation("ThanhToan");
                 });
 
             modelBuilder.Entity("BanSach.Models.KhachHang", b =>

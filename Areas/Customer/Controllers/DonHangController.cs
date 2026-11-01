@@ -72,6 +72,12 @@ namespace BanSach.Areas.Customer.Controllers
                 return RedirectToAction("Index", "GioHang");
             }
 
+            if (model.PhuongThucThanhToan is not PhuongThucThanhToan.COD and not PhuongThucThanhToan.ChuyenKhoan)
+            {
+                TempData["error"] = "Phương thức thanh toán không hợp lệ.";
+                return RedirectToAction(nameof(DatHang));
+            }
+
             var diaChi = await _context.DiaChis.FirstOrDefaultAsync(x => x.MaDC == model.MaDC && x.MaKH == maKH);
             var sdt = await _context.SoDienThoais.FirstOrDefaultAsync(x => x.MaSDT == model.MaSDT && x.MaKH == maKH);
             if (diaChi == null || sdt == null)
@@ -83,41 +89,66 @@ namespace BanSach.Areas.Customer.Controllers
             await using var tx = await _context.Database.BeginTransactionAsync();
             try
             {
+                var sachTrongGio = new List<(GioHangItem Item, Sach Sach)>();
+                var giaDaThayDoi = false;
                 foreach (var item in items)
                 {
                     var sach = await _context.Sachs.FirstOrDefaultAsync(x => x.MaSach == item.MaSach);
-                    if (sach == null || sach.SoLuongTon < item.SoLuong)
+                    if (item.SoLuong < 1 || sach == null || sach.SoLuongTon < item.SoLuong)
                     {
                         TempData["error"] = $"Sách \"{item.TenSach}\" không đủ số lượng tồn.";
                         return RedirectToAction("Index", "GioHang");
                     }
 
-                    sach.SoLuongTon -= item.SoLuong;
+                    giaDaThayDoi |= item.GiaBan != sach.GiaBan;
+                    item.TenSach = sach.TenSach;
+                    item.GiaBan = sach.GiaBan;
+                    sachTrongGio.Add((item, sach));
                 }
 
+                if (giaDaThayDoi)
+                {
+                    _gioHang.LuuGio(items);
+                    TempData["error"] = "Giá sách đã thay đổi. Vui lòng kiểm tra và xác nhận lại đơn hàng.";
+                    return RedirectToAction(nameof(DatHang));
+                }
+
+                var chiTietDonHang = new List<ChiTietDonHang>();
+                foreach (var (item, sach) in sachTrongGio)
+                {
+                    sach.SoLuongTon -= item.SoLuong;
+                    chiTietDonHang.Add(new ChiTietDonHang
+                    {
+                        MaSach = sach.MaSach,
+                        SoLuong = item.SoLuong,
+                        DonGia = sach.GiaBan
+                    });
+                }
+
+                var tongTien = chiTietDonHang.Sum(x => x.DonGia * x.SoLuong);
+                var ngayDat = DateTime.UtcNow;
                 var don = new DonHang
                 {
                     MaKH = maKH.Value,
-                    NgayDat = DateTime.UtcNow,
+                    NgayDat = ngayDat,
                     TrangThai = TrangThaiDonHang.ChoXacNhan,
-                    TongTien = items.Sum(x => x.ThanhTien),
-                    PhuongThucThanhToan = model.PhuongThucThanhToan == PhuongThucThanhToan.ChuyenKhoan
-                        ? PhuongThucThanhToan.ChuyenKhoan
-                        : PhuongThucThanhToan.COD,
-                    TrangThaiThanhToan = model.PhuongThucThanhToan == PhuongThucThanhToan.ChuyenKhoan
-                        ? TrangThaiThanhToan.DaThanhToan
-                        : TrangThaiThanhToan.ChuaThanhToan,
+                    TongTien = tongTien,
+                    PhuongThucThanhToan = model.PhuongThucThanhToan,
+                    TrangThaiThanhToan = TrangThaiThanhToan.ChuaThanhToan,
                     MaDC = diaChi.MaDC,
                     MaSDT = sdt.MaSDT,
                     DiaChiGiao = diaChi.DiaChiChiTiet,
                     SoDienThoaiGiao = sdt.SoDT,
                     GhiChu = model.GhiChu,
-                    ChiTietDonHangs = items.Select(x => new ChiTietDonHang
+                    ChiTietDonHangs = chiTietDonHang,
+                    ThanhToan = new ThanhToan
                     {
-                        MaSach = x.MaSach,
-                        SoLuong = x.SoLuong,
-                        DonGia = x.GiaBan
-                    }).ToList(),
+                        SoTien = tongTien,
+                        PhuongThuc = model.PhuongThucThanhToan,
+                        TrangThai = TrangThaiThanhToan.ChuaThanhToan,
+                        NgayTao = ngayDat,
+                        NgayCapNhat = ngayDat
+                    },
                     GiaoHang = new GiaoHang
                     {
                         TrangThai = TrangThaiGiaoHang.ChoGiao
@@ -169,6 +200,12 @@ namespace BanSach.Areas.Customer.Controllers
                 return RedirectToAction(nameof(ChiTiet), new { id });
             }
 
+            if (don.TrangThaiThanhToan == TrangThaiThanhToan.DaThanhToan)
+            {
+                TempData["error"] = "Đơn đã thanh toán. Vui lòng liên hệ quản trị viên để xử lý hoàn tiền.";
+                return RedirectToAction(nameof(ChiTiet), new { id });
+            }
+
             don.TrangThai = TrangThaiDonHang.DaHuy;
             foreach (var ct in don.ChiTietDonHangs)
             {
@@ -189,6 +226,7 @@ namespace BanSach.Areas.Customer.Controllers
             if (id == null || maKH == null) return null;
             return await _context.DonHangs
                 .Include(x => x.GiaoHang)
+                .Include(x => x.ThanhToan)
                 .Include(x => x.ChiTietDonHangs).ThenInclude(x => x.Sach)
                 .FirstOrDefaultAsync(x => x.MaDH == id && x.MaKH == maKH);
         }

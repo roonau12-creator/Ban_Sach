@@ -18,6 +18,10 @@
             </div>
             <div class="col-md-6">
                 <p><strong>Thanh toán:</strong> @HienThi.PhuongThuc(Model.PhuongThucThanhToan) — @HienThi.ThanhToan(Model.TrangThaiThanhToan)</p>
+                <p><strong>Số tiền thanh toán:</strong> @(Model.ThanhToan == null ? "—" : HienThi.Tien(Model.ThanhToan.SoTien))</p>
+                <p><strong>Mã giao dịch:</strong> @(Model.ThanhToan?.MaGiaoDich ?? "—")</p>
+                <p><strong>Cập nhật giao dịch:</strong> @(Model.ThanhToan?.NgayCapNhat.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "—")</p>
+                <p><strong>Thời gian thanh toán:</strong> @(Model.ThanhToan?.NgayThanhToan?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "—")</p>
                 <p><strong>Giao hàng:</strong> @HienThi.GiaoHang(Model.GiaoHang?.TrangThai)</p>
                 <p><strong>Ngày giao:</strong> @(Model.GiaoHang?.NgayGiao?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "—")</p>
                 <p><strong>Ghi chú giao:</strong> @(Model.GiaoHang?.GhiChu ?? "—")</p>
@@ -61,9 +65,14 @@
                     <input type="hidden" name="id" value="@Model.MaDH" />
                     <label class="form-label fw-bold">Thanh toán</label>
                     <select name="trangThaiThanhToan" class="form-select mb-2">
-                        <option value="@TrangThaiThanhToan.ChuaThanhToan">Chưa thanh toán</option>
                         <option value="@TrangThaiThanhToan.DaThanhToan">Đã thanh toán</option>
+                        <option value="@TrangThaiThanhToan.ThatBai">Thất bại</option>
                     </select>
+                    @if (Model.PhuongThucThanhToan == PhuongThucThanhToan.ChuyenKhoan)
+                    {
+                        <input name="maGiaoDich" class="form-control mb-2" maxlength="100" placeholder="Mã giao dịch đã đối chiếu" />
+                    }
+                    <small class="d-block text-muted mb-2">Chỉ xác nhận chuyển khoản sau khi đã đối chiếu giao dịch thực tế.</small>
                     <button class="btn btn-success w-100">Cập nhật thanh toán</button>
                 </form>
             </div>
