@@ -2,52 +2,255 @@
 @{
     ViewData["Title"] = "Thống kê / Báo cáo";
 }
-<h2 class="fw-bold mb-4"><i class="bi bi-graph-up"></i> Thống kê / Báo cáo</h2>
-<form method="get" class="row g-2 mb-4">
-    <div class="col-md-3">
-        <label class="form-label">Từ ngày</label>
-        <input type="date" name="tuNgay" class="form-control" value="@Model.TuNgay.ToString("yyyy-MM-dd")" />
+
+<style>
+    /* --- Custom CSS cho Dashboard --- */
+    
+    /* 1. Stat Cards */
+    .stat-card {
+        border: none;
+        border-radius: 12px;
+        transition: transform 0.2s, box-shadow 0.2s;
+        overflow: hidden;
+        position: relative;
+    }
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+    }
+    .stat-card .stat-icon {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        font-size: 2.5rem;
+        opacity: 0.15;
+    }
+    .stat-card .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .stat-card .stat-label {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+    .border-start-primary { border-left: 4px solid #0d6efd !important; }
+    .border-start-success { border-left: 4px solid #198754 !important; }
+    .border-start-info { border-left: 4px solid #0dcaf0 !important; }
+
+    /* 2. Status Dots cho card trạng thái */
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+    }
+
+    /* 3. Table Improvements */
+    .table-dashboard thead th {
+        background-color: #f8f9fa;
+        color: #6c757d;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        border-bottom: 2px solid #e9ecef;
+    }
+    .table-dashboard tbody td {
+        vertical-align: middle;
+        padding: 1rem 0.75rem;
+    }
+    .avatar-sm {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+    
+    /* Badge trạng thái mặc định (nếu helper trả về text thường) */
+    .badge-soft {
+        font-weight: 500;
+        padding: 0.4em 0.75em;
+        border-radius: 6px;
+        font-size: 0.8rem;
+    }
+</style>
+
+<!-- 1. HEADER -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">
+            <i class="bi bi-bar-chart-fill text-primary me-2"></i>Thống kê & Báo cáo
+        </h2>
+        <p class="text-muted mb-0 small">Tổng quan hoạt động kinh doanh và chi tiết đơn hàng</p>
     </div>
-    <div class="col-md-3">
-        <label class="form-label">Đến ngày</label>
-        <input type="date" name="denNgay" class="form-control" value="@Model.DenNgay.ToString("yyyy-MM-dd")" />
+</div>
+
+<!-- 2. FILTER BAR (Bộ lọc) -->
+<div class="card border-0 bg-light shadow-sm mb-4">
+    <div class="card-body py-3">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label text-muted small fw-semibold mb-1">
+                    <i class="bi bi-calendar-event me-1"></i> Từ ngày
+                </label>
+                <input type="date" name="tuNgay" class="form-control" value="@Model.TuNgay.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-muted small fw-semibold mb-1">
+                    <i class="bi bi-calendar-event-fill me-1"></i> Đến ngày
+                </label>
+                <input type="date" name="denNgay" class="form-control" value="@Model.DenNgay.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1 shadow-sm">
+                    <i class="bi bi-funnel-fill me-1"></i> Xem báo cáo
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary" title="Đặt lại bộ lọc">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </form>
     </div>
-    <div class="col-auto align-self-end">
-        <button class="btn btn-primary">Xem báo cáo</button>
-    </div>
-</form>
+</div>
+
+<!-- 3. STAT CARDS (Thẻ thống kê nhanh) -->
 <div class="row g-3 mb-4">
-    <div class="col-md-4"><div class="card stat-card"><div class="card-body"><div class="text-muted">Tổng đơn</div><h3>@Model.TongDon</h3></div></div></div>
-    <div class="col-md-4"><div class="card stat-card"><div class="card-body"><div class="text-muted">Doanh thu</div><h3>@HienThi.Tien(Model.DoanhThu)</h3></div></div></div>
+    <!-- Card 1: Tổng đơn -->
     <div class="col-md-4">
-        <div class="card stat-card">
-            <div class="card-body">
-                <div class="text-muted mb-2">Theo trạng thái</div>
-                @foreach (var kv in Model.DonTheoTrangThai)
-                {
-                    <div>@HienThi.TrangThaiDon(kv.Key): <strong>@kv.Value</strong></div>
-                }
+        <div class="card stat-card shadow-sm border-start-primary bg-white">
+            <div class="card-body p-4">
+                <i class="bi bi-bag-check-fill stat-icon text-primary"></i>
+                <div class="stat-label text-primary mb-2">Tổng đơn hàng</div>
+                <div class="stat-value text-dark">@Model.TongDon</div>
+                <div class="text-muted small mt-1">Đơn hàng trong kỳ</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Doanh thu -->
+    <div class="col-md-4">
+        <div class="card stat-card shadow-sm border-start-success bg-white">
+            <div class="card-body p-4">
+                <i class="bi bi-currency-dollar stat-icon text-success"></i>
+                <div class="stat-label text-success mb-2">Tổng doanh thu</div>
+                <div class="stat-value text-dark">@HienThi.Tien(Model.DoanhThu)</div>
+                <div class="text-muted small mt-1">Doanh thu thuần</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Theo trạng thái -->
+    <div class="col-md-4">
+        <div class="card stat-card shadow-sm border-start-info bg-white">
+            <div class="card-body p-4">
+                <i class="bi bi-pie-chart-fill stat-icon text-info"></i>
+                <div class="stat-label text-info mb-3">Phân bố trạng thái</div>
+                <div class="mt-2">
+                    @foreach (var kv in Model.DonTheoTrangThai)
+                    {
+                        // Map màu cho từng trạng thái (Bạn có thể chỉnh lại key cho khớp với C#)
+                        var colorClass = kv.Key switch {
+                            "Đã giao hàng" or "Hoàn thành" => "bg-success",
+                            "Đang xử lý" or "Chờ duyệt" => "bg-warning",
+                            "Đã hủy" => "bg-danger",
+                            _ => "bg-secondary"
+                        };
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <span class="status-dot @colorClass"></span>
+                                <span class="small fw-medium">@HienThi.TrangThaiDon(kv.Key)</span>
+                            </div>
+                            <span class="badge bg-light text-dark border rounded-pill">@kv.Value</span>
+                        </div>
+                    }
+                    @if (!Model.DonTheoTrangThai.Any())
+                    {
+                        <span class="text-muted small fst-italic">Không có dữ liệu</span>
+                    }
+                </div>
             </div>
         </div>
     </div>
 </div>
-<div class="card shadow-sm">
-    <div class="card-body table-responsive">
-        <table class="table table-hover align-middle">
-            <thead><tr><th>Mã</th><th>Khách</th><th>Ngày</th><th>Tổng</th><th>Trạng thái</th><th>Thanh toán</th></tr></thead>
-            <tbody>
-            @foreach (var d in Model.DonHangs)
-            {
-                <tr>
-                    <td><a asp-controller="DonHang" asp-action="Details" asp-route-id="@d.MaDH">#@d.MaDH</a></td>
-                    <td>@d.KhachHang?.HoTen</td>
-                    <td>@d.NgayDat.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
-                    <td>@HienThi.Tien(d.TongTien)</td>
-                    <td>@HienThi.TrangThaiDon(d.TrangThai)</td>
-                    <td>@HienThi.ThanhToan(d.TrangThaiThanhToan)</td>
-                </tr>
-            }
-            </tbody>
-        </table>
+
+<!-- 4. DATA TABLE (Chi tiết đơn hàng) -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold text-dark">Chi tiết đơn hàng</h5>
+        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">
+            <i class="bi bi-list-ul me-1"></i> @Model.DonHangs.Count() kết quả
+        </span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-dashboard table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4 border-0">Mã ĐH</th>
+                        <th class="border-0">Khách hàng</th>
+                        <th class="border-0">Thời gian</th>
+                        <th class="border-0 text-end">Tổng tiền</th>
+                        <th class="border-0 text-center">Trạng thái</th>
+                        <th class="border-0 text-center pe-4">Thanh toán</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @if (Model.DonHangs.Any())
+                {
+                    foreach (var d in Model.DonHangs)
+                    {
+                        var avatarChar = !string.IsNullOrEmpty(d.KhachHang?.HoTen) ? d.KhachHang.HoTen[0].ToString().ToUpper() : "?";
+                        
+                        <tr>
+                            <td class="ps-4">
+                                <a asp-controller="DonHang" asp-action="Details" asp-route-id="@d.MaDH" 
+                                   class="fw-bold text-decoration-none text-primary">
+                                    #@d.MaDH
+                                </a>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-circle avatar-sm bg-light text-dark fw-bold me-2 border">
+                                        @avatarChar
+                                    </div>
+                                    <span class="fw-medium">@(d.KhachHang?.HoTen ?? "Khách vãng lai")</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="small text-dark fw-medium">@d.NgayDat.ToLocalTime().ToString("dd/MM/yyyy")</div>
+                                <div class="small text-muted">@d.NgayDat.ToLocalTime().ToString("HH:mm")</div>
+                            </td>
+                            <td class="text-end">
+                                <span class="fw-bold text-success">@HienThi.Tien(d.TongTien)</span>
+                            </td>
+                            <td class="text-center">
+                                <!-- Bọc text trong badge để đẹp hơn -->
+                                <span class="badge bg-light text-dark border badge-soft">
+                                    @HienThi.TrangThaiDon(d.TrangThai)
+                                </span>
+                            </td>
+                            <td class="text-center pe-4">
+                                <span class="badge bg-light text-dark border badge-soft">
+                                    @HienThi.ThanhToan(d.TrangThaiThanhToan)
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-5 bg-white">
+                            <i class="bi bi-inbox display-4 text-muted opacity-25"></i>
+                            <p class="text-muted mt-3 mb-0">Không có đơn hàng nào trong khoảng thời gian này.</p>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
