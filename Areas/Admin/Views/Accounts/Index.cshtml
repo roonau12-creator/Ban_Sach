@@ -1,0 +1,55 @@
+@model IEnumerable<BanSach.Models.AccountListItem>
+@{
+    ViewData["Title"] = "Quản lý tài khoản";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1 class="h3 mb-3">Quản lý tài khoản và vai trò</h1>
+
+@if (TempData["success"] is string success)
+{
+    <div class="alert alert-success" role="status">@success</div>
+}
+@if (TempData["error"] is string error)
+{
+    <div class="alert alert-danger" role="alert">@error</div>
+}
+
+<div class="table-responsive">
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Ngày tạo (UTC)</th>
+                <th>Vai trò</th>
+                <th>Cập nhật quyền</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (BanSach.Models.AccountListItem account in Model)
+            {
+                <tr>
+                    <td>@account.Email</td>
+                    <td>@account.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@account.Role</td>
+                    <td>
+                        <form asp-area="Admin" asp-controller="Accounts" asp-action="ChangeRole" method="post" class="d-flex gap-2">
+                            <input type="hidden" name="UserId" value="@account.Id" />
+                            <select name="Role" class="form-select" aria-label="Vai trò mới cho @account.Email">
+                                @foreach (string role in new[] {
+                                    BanSach.Models.UserRoles.Administrator,
+                                    BanSach.Models.UserRoles.Employee,
+                                    BanSach.Models.UserRoles.Customer
+                                })
+                                {
+                                    <option value="@role" selected="@(role == account.Role)">@role</option>
+                                }
+                            </select>
+                            <button type="submit" class="btn btn-primary text-nowrap">Lưu</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -2135,19 +2135,19 @@
     ]
   },
   "packageFolders": {
-    "/home/roonau/.nuget/packages/": {}
+    "C:\\Users\\hungtt\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/roonau/Desktop/Bansach/BanSach/BanSach.csproj",
+      "projectUniqueName": "D:\\Phat_Trien_MNM\\Quan_Ly_Sach\\Ban_Sach\\Ban_Sach\\BanSach.csproj",
       "projectName": "BanSach",
-      "projectPath": "/home/roonau/Desktop/Bansach/BanSach/BanSach.csproj",
-      "packagesPath": "/home/roonau/.nuget/packages/",
-      "outputPath": "/home/roonau/Desktop/Bansach/BanSach/obj/",
+      "projectPath": "D:\\Phat_Trien_MNM\\Quan_Ly_Sach\\Ban_Sach\\Ban_Sach\\BanSach.csproj",
+      "packagesPath": "C:\\Users\\hungtt\\.nuget\\packages\\",
+      "outputPath": "D:\\Phat_Trien_MNM\\Quan_Ly_Sach\\Ban_Sach\\Ban_Sach\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/home/roonau/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\hungtt\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
@@ -2213,7 +2213,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/home/roonau/.dotnet/sdk/10.0.400/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.403/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.AspNetCore": "(,10.0.32767]",
           "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",

@@ -1,11 +1,13 @@
 using BanSach.Data;
 using BanSach.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BanSach.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Policy = AuthorizationPolicies.ManageBooks)]
     public class ChuDeController : Controller
     {
         private readonly ApplicationDbContext _context;
