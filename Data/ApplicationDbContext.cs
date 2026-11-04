@@ -13,6 +13,7 @@ namespace BanSach.Data
             
         }
         public DbSet<ChuDe>ChuDes { get; set; }
+        public DbSet<Sach> Sachs { get; set; }
         public DbSet<ApplicationUser> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -22,6 +23,12 @@ namespace BanSach.Data
             modelBuilder.Entity<ApplicationUser>()
                 .HasIndex(user => user.NormalizedEmail)
                 .IsUnique();
+
+            modelBuilder.Entity<Sach>()
+                .HasOne(book => book.ChuDe)
+                .WithMany(category => category.Sachs)
+                .HasForeignKey(book => book.MaCD)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

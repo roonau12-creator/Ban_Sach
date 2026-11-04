@@ -1,109 +1,47 @@
 @model BanSach.Models.ChuDe
 
 @{
-    ViewData["Title"] = "Xóa chủ đề";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Xóa danh mục";
 }
 
 <div class="container mt-4">
-
     <div class="row justify-content-center">
-
-        <div class="col-md-8">
-
+        <div class="col-lg-8">
             <div class="card shadow-sm border-danger">
-
                 <div class="card-header bg-danger text-white">
-
-                    <h4 class="mb-0">
-
-                        <i class="bi bi-exclamation-triangle"></i>
-                        Xóa chủ đề
-
-                    </h4>
-
+                    <h4 class="mb-0">Xóa danh mục sách</h4>
                 </div>
-
-
                 <div class="card-body">
-
-                    <div class="alert alert-warning">
-
-                        <p class="mb-0">
-                              Lưu ý: Sau khi xác nhận, chủ đề sẽ được gửi yêu cầu xóa.
-                        </p>
-
-                    </div>
-
-
-                    <div class="mb-3">
-
-                        <label class="fw-bold">
-                            Mã chủ đề
-                        </label>
-
-                        <input class="form-control"
-                               value="@Model.MaCD"
-                               readonly />
-
-                    </div>
-
-
-                    <div class="mb-3">
-
-                        <label class="fw-bold">
-                            Tên chủ đề
-                        </label>
-
-                        <input class="form-control"
-                               value="@Model.TenChuDe"
-                               readonly />
-
-                    </div>
-
-                </div>
-
-
-                <div class="card-footer">
-
-                    <form asp-action="Delete"
-                          method="post">
-
-                        @Html.AntiForgeryToken()
-
-                        <input type="hidden"
-                               asp-for="MaCD" />
-
-
-                        <div class="d-flex justify-content-between">
-
-                            <a asp-action="Index"
-                               class="btn btn-secondary">
-
-                                <i class="bi bi-arrow-left"></i>
-                                Hủy
-
-                            </a>
-
-
-                            <button type="submit"
-                                    class="btn btn-danger">
-
-                                <i class="bi bi-trash"></i>
-                                Xác nhận xóa
-
-                            </button>
-
+                    @if (ViewBag.DeleteError is string deleteError)
+                    {
+                        <div class="alert alert-danger" role="alert">@deleteError</div>
+                    }
+                    <p>Bạn có chắc muốn xóa danh mục <strong>@Model.TenChuDe</strong> không?</p>
+                    @if (Model.Sachs.Count > 0)
+                    {
+                        <div class="alert alert-warning">
+                            Không thể xóa vì danh mục đang được sách tham chiếu. Hãy chuyển các sách này sang danh mục khác:
+                            <ul class="mb-0 mt-2">
+                                @foreach (var book in Model.Sachs.OrderBy(book => book.TenSach))
+                                {
+                                    <li>@book.TenSach</li>
+                                }
+                            </ul>
                         </div>
-
-                    </form>
-
+                    }
+                    <p>Mô tả: @(string.IsNullOrWhiteSpace(Model.MoTa) ? "—" : Model.MoTa)</p>
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                        @if (Model.Sachs.Count == 0)
+                        {
+                            <form asp-action="Delete" asp-route-id="@Model.MaCD" method="post">
+                                <input type="hidden" asp-for="MaCD" />
+                                <button type="submit" class="btn btn-danger">Xác nhận xóa</button>
+                            </form>
+                        }
+                    </div>
                 </div>
-
             </div>
-
         </div>
-
     </div>
-
 </div>

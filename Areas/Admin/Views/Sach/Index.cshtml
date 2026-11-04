@@ -1,0 +1,58 @@
+@model IEnumerable<BanSach.Models.Sach>
+
+@{
+    ViewData["Title"] = "Quản lý sách";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">Quản lý sách</h2>
+            <p class="text-muted mb-0">Gán mỗi sách vào danh mục phù hợp để hiển thị trên trang bán sách.</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary">Thêm sách</a>
+    </div>
+
+    @if (TempData["success"] is string success)
+    {
+        <div class="alert alert-success" role="alert">@success</div>
+    }
+
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tên sách</th>
+                        <th>Danh mục</th>
+                        <th>Mô tả</th>
+                        <th style="width: 100px">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var book in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@book.TenSach</td>
+                            <td>@book.ChuDe?.TenChuDe</td>
+                            <td>@(string.IsNullOrWhiteSpace(book.MoTa) ? "—" : book.MoTa)</td>
+                            <td><a asp-action="Edit" asp-route-id="@book.MaSach" class="btn btn-warning btn-sm">Sửa</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            Chưa có sách. Hãy tạo danh mục trước khi thêm sách.
+            @if (ViewContext.HttpContext.User.IsInRole(BanSach.Models.UserRoles.Administrator) ||
+                 ViewContext.HttpContext.User.IsInRole(BanSach.Models.UserRoles.Employee))
+            {
+                <a asp-area="Admin" asp-controller="ChuDe" asp-action="Create">Thêm danh mục</a>
+            }
+        </div>
+    }
+</div>

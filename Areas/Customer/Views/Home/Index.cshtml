@@ -1,8 +1,57 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@model IEnumerable<BanSach.Models.ChuDe>
+
+@{
+    ViewData["Title"] = "Mua sách";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="py-4">
+    <div class="mb-4">
+        <h1 class="display-5 fw-bold">Khám phá sách theo danh mục</h1>
+        <p class="text-muted">Tìm những cuốn sách phù hợp với bạn.</p>
+    </div>
+
+    @if (Model.Any())
+    {
+        @foreach (var category in Model)
+        {
+            <section class="mb-5" aria-labelledby="category-@category.MaCD">
+                <div class="border-bottom mb-3 pb-2">
+                    <h2 id="category-@category.MaCD" class="h3">@category.TenChuDe</h2>
+                    @if (!string.IsNullOrWhiteSpace(category.MoTa))
+                    {
+                        <p class="text-muted mb-0">@category.MoTa</p>
+                    }
+                </div>
+
+                @if (category.Sachs.Count == 0)
+                {
+                    <p class="text-muted">Danh mục hiện chưa có sách.</p>
+                }
+                else
+                {
+                    <div class="row g-3">
+                        @foreach (var book in category.Sachs.OrderBy(book => book.TenSach))
+                        {
+                            <div class="col-sm-6 col-lg-4">
+                                <article class="card h-100 shadow-sm">
+                                    <div class="card-body">
+                                        <h3 class="h5 card-title">@book.TenSach</h3>
+                                        @if (!string.IsNullOrWhiteSpace(book.MoTa))
+                                        {
+                                            <p class="card-text text-muted">@book.MoTa</p>
+                                        }
+                                        <span class="badge text-bg-light">@category.TenChuDe</span>
+                                    </div>
+                                </article>
+                            </div>
+                        }
+                    </div>
+                }
+            </section>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info">Danh mục sách sẽ được cập nhật sớm.</div>
+    }
+</section>

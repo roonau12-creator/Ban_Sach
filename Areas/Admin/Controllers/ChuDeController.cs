@@ -3,6 +3,7 @@ using BanSach.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace BanSach.Areas.Admin.Controllers
 {
@@ -10,6 +11,7 @@ namespace BanSach.Areas.Admin.Controllers
     [Authorize(Policy = AuthorizationPolicies.ManageBooks)]
     public class ChuDeController : Controller
     {
+        private const string DuplicateNameIndex = "IX_ChuDes_TenChuDeNormalized";
         private readonly ApplicationDbContext _context;
 
         public ChuDeController(ApplicationDbContext context)
@@ -17,17 +19,16 @@ namespace BanSach.Areas.Admin.Controllers
             _context = context;
         }
 
-        // GET: Admin/ChuDe
         public async Task<IActionResult> Index()
         {
-            List<ChuDe> danhSachChuDe = await _context.ChuDes
-                .OrderByDescending(x => x.MaCD)
+            List<ChuDe> categories = await _context.ChuDes
+                .Include(category => category.Sachs)
+                .OrderBy(category => category.TenChuDe)
                 .ToListAsync();
 
-            return View(danhSachChuDe);
+            return View(categories);
         }
 
-        // GET: Admin/ChuDe/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -35,42 +36,51 @@ namespace BanSach.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            ChuDe? chuDe = await _context.ChuDes
-                .FirstOrDefaultAsync(x => x.MaCD == id);
+            ChuDe? category = await _context.ChuDes
+                .Include(item => item.Sachs)
+                .FirstOrDefaultAsync(item => item.MaCD == id);
 
-            if (chuDe == null)
-            {
-                return NotFound();
-            }
-
-            return View(chuDe);
+            return category == null ? NotFound() : View(category);
         }
 
-        // GET: Admin/ChuDe/Create
         public IActionResult Create()
         {
-            return View();
+            return View(new ChuDe());
         }
 
-        // POST: Admin/ChuDe/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(ChuDe chuDe)
+        public async Task<IActionResult> Create(ChuDe category)
         {
-            if (ModelState.IsValid)
+            category.MaCD = 0;
+            category.Sachs = new List<Sach>();
+            NormalizeInput(category);
+            if (ModelState.IsValid &&
+                await HasDuplicateNameAsync(category.TenChuDeNormalized!, null))
             {
-                _context.ChuDes.Add(chuDe);
-                await _context.SaveChangesAsync();
-
-                TempData["success"] = "Thêm chủ đề thành công!";
-
-                return RedirectToAction(nameof(Index));
+                ModelState.AddModelError(nameof(category.TenChuDe), "Tên danh mục này đã tồn tại.");
             }
 
-            return View(chuDe);
+            if (!ModelState.IsValid)
+            {
+                return View(category);
+            }
+
+            _context.ChuDes.Add(category);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException exception) when (IsDuplicateNameException(exception))
+            {
+                ModelState.AddModelError(nameof(category.TenChuDe), "Tên danh mục này đã tồn tại.");
+                return View(category);
+            }
+
+            TempData["success"] = "Thêm danh mục thành công.";
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Admin/ChuDe/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -78,40 +88,55 @@ namespace BanSach.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            ChuDe? chuDe = await _context.ChuDes.FindAsync(id);
-
-            if (chuDe == null)
-            {
-                return NotFound();
-            }
-
-            return View(chuDe);
+            ChuDe? category = await _context.ChuDes.FindAsync(id);
+            return category == null ? NotFound() : View(category);
         }
 
-        // POST: Admin/ChuDe/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, ChuDe chuDe)
+        public async Task<IActionResult> Edit(int id, ChuDe category)
         {
-            if (id != chuDe.MaCD)
+            if (id != category.MaCD)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            NormalizeInput(category);
+            if (ModelState.IsValid &&
+                await HasDuplicateNameAsync(category.TenChuDeNormalized!, id))
             {
-                _context.ChuDes.Update(chuDe);
-                await _context.SaveChangesAsync();
-
-                TempData["success"] = "Cập nhật chủ đề thành công!";
-
-                return RedirectToAction(nameof(Index));
+                ModelState.AddModelError(nameof(category.TenChuDe), "Tên danh mục này đã tồn tại.");
             }
 
-            return View(chuDe);
+            if (!ModelState.IsValid)
+            {
+                return View(category);
+            }
+
+            ChuDe? existingCategory = await _context.ChuDes.FindAsync(id);
+            if (existingCategory == null)
+            {
+                return NotFound();
+            }
+
+            existingCategory.TenChuDe = category.TenChuDe;
+            existingCategory.MoTa = category.MoTa;
+            existingCategory.TenChuDeNormalized = category.TenChuDeNormalized;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException exception) when (IsDuplicateNameException(exception))
+            {
+                ModelState.AddModelError(nameof(category.TenChuDe), "Tên danh mục này đã tồn tại.");
+                return View(category);
+            }
+
+            TempData["success"] = "Cập nhật danh mục thành công.";
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Admin/ChuDe/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -119,35 +144,93 @@ namespace BanSach.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            ChuDe? chuDe = await _context.ChuDes
-                .FirstOrDefaultAsync(x => x.MaCD == id);
+            ChuDe? category = await _context.ChuDes
+                .Include(item => item.Sachs)
+                .FirstOrDefaultAsync(item => item.MaCD == id);
 
-            if (chuDe == null)
-            {
-                return NotFound();
-            }
-
-            return View(chuDe);
+            return category == null ? NotFound() : View(category);
         }
 
-        // POST: Admin/ChuDe/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            ChuDe? chuDe = await _context.ChuDes.FindAsync(id);
+            ChuDe? category = await _context.ChuDes
+                .Include(item => item.Sachs)
+                .FirstOrDefaultAsync(item => item.MaCD == id);
 
-            if (chuDe == null)
+            if (category == null)
             {
                 return NotFound();
             }
 
-            _context.ChuDes.Remove(chuDe);
-            await _context.SaveChangesAsync();
+            if (category.Sachs.Count > 0)
+            {
+                ViewBag.DeleteError = "Không thể xóa danh mục đang có sách. Hãy chuyển các sách sang danh mục khác trước.";
+                return View("Delete", category);
+            }
 
-            TempData["success"] = "Xóa chủ đề thành công!";
+            _context.ChuDes.Remove(category);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException exception) when (IsReferencedCategoryException(exception))
+            {
+                _context.Entry(category).State = EntityState.Unchanged;
+                category.Sachs = await _context.Sachs
+                    .AsNoTracking()
+                    .Where(book => book.MaCD == id)
+                    .OrderBy(book => book.TenSach)
+                    .ToListAsync();
+                ViewBag.DeleteError = "Danh mục vừa được gán cho sách khác nên không thể xóa. Hãy chuyển các sách sang danh mục khác trước.";
+                return View("Delete", category);
+            }
 
+            TempData["success"] = "Xóa danh mục thành công.";
             return RedirectToAction(nameof(Index));
+        }
+
+        private async Task<bool> HasDuplicateNameAsync(string normalizedName, int? excludedId)
+        {
+            var existingNames = await _context.ChuDes
+                .AsNoTracking()
+                .Where(category => excludedId == null || category.MaCD != excludedId)
+                .Select(category => new { category.TenChuDe, category.TenChuDeNormalized })
+                .ToListAsync();
+
+            return existingNames.Any(category =>
+                string.Equals(category.TenChuDeNormalized, normalizedName, StringComparison.Ordinal) ||
+                string.Equals(Normalize(category.TenChuDe), normalizedName, StringComparison.Ordinal));
+        }
+
+        private static void NormalizeInput(ChuDe category)
+        {
+            category.TenChuDe = category.TenChuDe?.Trim() ?? string.Empty;
+            category.MoTa = string.IsNullOrWhiteSpace(category.MoTa) ? null : category.MoTa.Trim();
+            category.TenChuDeNormalized = Normalize(category.TenChuDe);
+        }
+
+        private static string Normalize(string name)
+        {
+            return name.Trim().ToUpperInvariant();
+        }
+
+        private static bool IsDuplicateNameException(DbUpdateException exception)
+        {
+            return exception.InnerException is PostgresException
+            {
+                SqlState: PostgresErrorCodes.UniqueViolation,
+                ConstraintName: DuplicateNameIndex
+            };
+        }
+
+        private static bool IsReferencedCategoryException(DbUpdateException exception)
+        {
+            return exception.InnerException is PostgresException
+            {
+                SqlState: PostgresErrorCodes.ForeignKeyViolation
+            };
         }
     }
 }

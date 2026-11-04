@@ -21,7 +21,7 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="Customer" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                            <a class="nav-link text-dark" asp-area="Customer" asp-controller="Home" asp-action="Index">Mua sách</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="Customer" asp-controller="Home" asp-action="Privacy">Chính sách</a>
@@ -29,7 +29,10 @@
                         @if (User.IsInRole(BanSach.Models.UserRoles.Administrator) || User.IsInRole(BanSach.Models.UserRoles.Employee))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="Admin" asp-controller="ChuDe" asp-action="Index">Quản lý chủ đề</a>
+                                <a class="nav-link text-dark" asp-area="Admin" asp-controller="Sach" asp-action="Index">Quản lý sách</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="Admin" asp-controller="ChuDe" asp-action="Index">Quản lý danh mục</a>
                             </li>
                         }
                         @if (User.IsInRole(BanSach.Models.UserRoles.Administrator))

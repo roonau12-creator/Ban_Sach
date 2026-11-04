@@ -1,0 +1,46 @@
+@model BanSach.Models.Sach
+
+@{
+    ViewData["Title"] = "Sửa sách";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning"><h4 class="mb-0">Sửa thông tin sách</h4></div>
+                <div class="card-body">
+                    <form asp-action="Edit" asp-route-id="@Model.MaSach" method="post">
+                        <input type="hidden" asp-for="MaSach" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        <div class="mb-3">
+                            <label asp-for="TenSach" class="form-label fw-bold">Tên sách</label>
+                            <input asp-for="TenSach" class="form-control" maxlength="200" />
+                            <span asp-validation-for="TenSach" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="MaCD" class="form-label fw-bold">Danh mục</label>
+                            <select asp-for="MaCD" asp-items="ViewBag.Categories" class="form-select">
+                                <option value="0">-- Chọn danh mục --</option>
+                            </select>
+                            <span asp-validation-for="MaCD" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="MoTa" class="form-label fw-bold">Mô tả</label>
+                            <textarea asp-for="MoTa" class="form-control" rows="4" maxlength="2000"></textarea>
+                            <span asp-validation-for="MoTa" class="text-danger"></span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                            <button type="submit" class="btn btn-warning">Lưu thay đổi</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
