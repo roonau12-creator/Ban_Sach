@@ -2,60 +2,324 @@
 @{
     ViewData["Title"] = "Quản lý sách";
 }
+
+<style>
+    /* --- Custom CSS cho trang Quản lý sách --- */
+    
+    /* 1. Ảnh bìa sách */
+    .book-cover {
+        width: 56px;
+        height: 78px;
+        object-fit: cover;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+        border: 1px solid #e9ecef;
+        transition: transform 0.2s;
+    }
+    .book-cover:hover {
+        transform: scale(1.08);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    }
+    .book-cover-placeholder {
+        width: 56px;
+        height: 78px;
+        border-radius: 6px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #adb5bd;
+        font-size: 1.5rem;
+        border: 1px dashed #ced4da;
+    }
+
+    /* 2. Badge tùy chỉnh */
+    .badge-feature {
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 0.3em 0.6em;
+        border-radius: 4px;
+        letter-spacing: 0.3px;
+    }
+
+    /* 3. Stock badge */
+    .stock-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.35em 0.7em;
+        border-radius: 6px;
+    }
+    .stock-out { background: #f8d7da; color: #842029; }
+    .stock-low { background: #fff3cd; color: #664d03; }
+    .stock-ok  { background: #d1e7dd; color: #0f5132; }
+
+    /* 4. Table */
+    .table-books thead th {
+        background-color: #f8f9fa;
+        color: #6c757d;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        border-bottom: 2px solid #e9ecef;
+    }
+    .table-books tbody td {
+        vertical-align: middle;
+        padding: 0.9rem 0.75rem;
+    }
+    .table-books tbody tr:hover {
+        background-color: rgba(var(--bs-primary-rgb), 0.03);
+    }
+
+    /* 5. Nút action tròn */
+    .btn-action-icon {
+        width: 34px;
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s;
+    }
+    .btn-action-icon:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    /* 6. Giá tiền */
+    .price-tag {
+        font-weight: 700;
+        color: #dc3545;
+        white-space: nowrap;
+    }
+
+    /* 7. Thông tin phụ (Chủ đề, Nhóm, NXB) */
+    .meta-info {
+        font-size: 0.88rem;
+        color: #495057;
+    }
+    .meta-info small {
+        display: block;
+        color: #adb5bd;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        margin-bottom: 2px;
+    }
+</style>
+
+<!-- 1. HEADER -->
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold"><i class="bi bi-journal"></i> Quản lý sách</h2>
-    <a asp-action="Create" class="btn btn-primary">Thêm sách</a>
+    <div>
+        <h2 class="fw-bold text-dark mb-1">
+            <i class="bi bi-journal-bookmark-fill text-primary me-2"></i>Quản lý Sách
+        </h2>
+        <p class="text-muted mb-0 small">Quản lý danh mục sách, tồn kho và thông tin xuất bản</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary shadow-sm px-4">
+        <i class="bi bi-plus-lg me-1"></i> Thêm sách mới
+    </a>
 </div>
-<form method="get" class="row g-2 mb-3">
-    <div class="col-md-3"><input name="q" value="@ViewBag.TuKhoa" class="form-control" placeholder="Tìm sách..." /></div>
-    <div class="col-md-2"><select name="maCD" class="form-select" asp-items="ViewBag.ChuDes"><option value="">Chủ đề</option></select></div>
-    <div class="col-md-2"><select name="maNhom" class="form-select" asp-items="ViewBag.NhomSachs"><option value="">Nhóm</option></select></div>
-    <div class="col-md-3"><select name="maNXB" class="form-select" asp-items="ViewBag.NhaXuatBans"><option value="">Nhà xuất bản</option></select></div>
-    <div class="col-auto"><button class="btn btn-outline-secondary">Lọc</button></div>
-</form>
-<div class="card shadow-sm">
-    <div class="card-body table-responsive">
-        <table class="table table-hover align-middle">
-            <thead>
-                <tr>
-                    <th>Ảnh</th>
-                    <th>Tên sách</th>
-                    <th>Chủ đề</th>
-                    <th>Nhóm</th>
-                    <th>NXB</th>
-                    <th>Giá</th>
-                    <th>Tồn</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td style="width:70px">
-                        @if (!string.IsNullOrEmpty(item.AnhBia))
-                        {
-                            <img src="@item.AnhBia" alt="" style="width:48px;height:64px;object-fit:cover" />
-                        }
-                    </td>
-                    <td>
-                        <div class="fw-semibold">@item.TenSach</div>
-                        @if (item.SachMoi) { <span class="badge bg-success">Mới</span> }
-                        @if (item.NoiBat) { <span class="badge bg-warning text-dark">Nổi bật</span> }
-                    </td>
-                    <td>@item.ChuDe?.TenChuDe</td>
-                    <td>@item.NhomSach?.TenNhom</td>
-                    <td>@item.NhaXuatBan?.TenNXB</td>
-                    <td>@HienThi.Tien(item.GiaBan)</td>
-                    <td>@item.SoLuongTon</td>
-                    <td class="text-end">
-                        <a asp-action="Details" asp-route-id="@item.MaSach" class="btn btn-info btn-sm text-white">Xem</a>
-                        <a asp-action="Edit" asp-route-id="@item.MaSach" class="btn btn-warning btn-sm">Sửa</a>
-                        <a asp-action="Delete" asp-route-id="@item.MaSach" class="btn btn-danger btn-sm">Xóa</a>
-                    </td>
-                </tr>
-            }
-            </tbody>
-        </table>
+
+<!-- 2. FILTER BAR -->
+<div class="card border-0 bg-light shadow-sm mb-4">
+    <div class="card-body py-3">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label text-muted small fw-semibold mb-1">
+                    <i class="bi bi-search me-1"></i> Từ khóa
+                </label>
+                <input name="q" value="@ViewBag.TuKhoa" class="form-control" placeholder="Tên sách, tác giả..." />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-muted small fw-semibold mb-1">
+                    <i class="bi bi-bookmark me-1"></i> Chủ đề
+                </label>
+                <select name="maCD" class="form-select" asp-items="ViewBag.ChuDes">
+                    <option value="">Tất cả chủ đề</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label text-muted small fw-semibold mb-1">
+                    <i class="bi bi-collection me-1"></i> Nhóm
+                </label>
+                <select name="maNhom" class="form-select" asp-items="ViewBag.NhomSachs">
+                    <option value="">Tất cả</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label text-muted small fw-semibold mb-1">
+                    <i class="bi bi-building me-1"></i> NXB
+                </label>
+                <select name="maNXB" class="form-select" asp-items="ViewBag.NhaXuatBans">
+                    <option value="">Tất cả</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    <i class="bi bi-funnel-fill me-1"></i> Lọc
+                </button>
+                @if (!string.IsNullOrEmpty(ViewBag.TuKhoa))
+                {
+                    <a asp-action="Index" class="btn btn-outline-secondary" title="Xóa bộ lọc">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                }
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 3. DATA TABLE -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold text-dark">Danh sách sách</h5>
+        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">
+            <i class="bi bi-book me-1"></i> @Model.Count() cuốn
+        </span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-books table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4 border-0" style="width: 80px;">Ảnh</th>
+                        <th class="border-0">Tên sách</th>
+                        <th class="border-0">Chủ đề</th>
+                        <th class="border-0">Nhóm</th>
+                        <th class="border-0">NXB</th>
+                        <th class="border-0 text-end">Giá bán</th>
+                        <th class="border-0 text-center">Tồn kho</th>
+                        <th class="border-0 text-center pe-4" style="width: 160px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <!-- Ảnh bìa -->
+                            <td class="ps-4">
+                                @if (!string.IsNullOrEmpty(item.AnhBia))
+                                {
+                                    <img src="@item.AnhBia" alt="@item.TenSach" class="book-cover" />
+                                }
+                                else
+                                {
+                                    <div class="book-cover-placeholder">
+                                        <i class="bi bi-book"></i>
+                                    </div>
+                                }
+                            </td>
+
+                            <!-- Tên sách + badge -->
+                            <td>
+                                <div class="fw-semibold text-dark mb-1">@item.TenSach</div>
+                                <div class="d-flex gap-1 flex-wrap">
+                                    @if (item.SachMoi)
+                                    {
+                                        <span class="badge bg-success badge-feature">
+                                            <i class="bi bi-stars me-1"></i>Mới
+                                        </span>
+                                    }
+                                    @if (item.NoiBat)
+                                    {
+                                        <span class="badge bg-warning text-dark badge-feature">
+                                            <i class="bi bi-fire me-1"></i>Nổi bật
+                                        </span>
+                                    }
+                                </div>
+                            </td>
+
+                            <!-- Chủ đề -->
+                            <td>
+                                <div class="meta-info">
+                                    <small>Chủ đề</small>
+                                    @(item.ChuDe?.TenChuDe ?? "—")
+                                </div>
+                            </td>
+
+                            <!-- Nhóm -->
+                            <td>
+                                <div class="meta-info">
+                                    <small>Nhóm</small>
+                                    @(item.NhomSach?.TenNhom ?? "—")
+                                </div>
+                            </td>
+
+                            <!-- NXB -->
+                            <td>
+                                <div class="meta-info">
+                                    <small>NXB</small>
+                                    @(item.NhaXuatBan?.TenNXB ?? "—")
+                                </div>
+                            </td>
+
+                            <!-- Giá -->
+                            <td class="text-end">
+                                <span class="price-tag">@HienThi.Tien(item.GiaBan)</span>
+                            </td>
+
+                            <!-- Tồn kho thông minh -->
+                            <td class="text-center">
+                                @if (item.SoLuongTon == 0)
+                                {
+                                    <span class="stock-badge stock-out">
+                                        <i class="bi bi-x-circle-fill"></i> Hết
+                                    </span>
+                                }
+                                else if (item.SoLuongTon < 5)
+                                {
+                                    <span class="stock-badge stock-low" title="Sắp hết hàng">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> @item.SoLuongTon
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="stock-badge stock-ok">
+                                        <i class="bi bi-box-seam-fill"></i> @item.SoLuongTon
+                                    </span>
+                                }
+                            </td>
+
+                            <!-- Thao tác -->
+                            <td class="text-center pe-4">
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a asp-action="Details" asp-route-id="@item.MaSach"
+                                       class="btn btn-outline-info btn-action-icon" title="Xem chi tiết">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.MaSach"
+                                       class="btn btn-outline-warning btn-action-icon" title="Sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@item.MaSach"
+                                       class="btn btn-outline-danger btn-action-icon" title="Xóa">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-5 bg-white">
+                            <i class="bi bi-journal-x display-3 text-muted opacity-50"></i>
+                            <p class="text-muted mt-3 mb-0">Không tìm thấy cuốn sách nào.</p>
+                            <a asp-action="Create" class="btn btn-sm btn-primary mt-3">
+                                <i class="bi bi-plus-lg me-1"></i> Thêm sách mới
+                            </a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
