@@ -2,40 +2,285 @@
 @{
     ViewData["Title"] = "Quản lý đơn hàng";
 }
+
+<style>
+    /* === ORDER TABS === */
+    .order-tabs {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        padding: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 12px;
+    }
+    .order-tab {
+        flex: 1;
+        min-width: 130px;
+        padding: 0.75rem 1rem;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        color: #6c757d;
+        font-weight: 600;
+        font-size: 0.88rem;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+    .order-tab:hover {
+        background: #fff;
+        color: #212529;
+    }
+    .order-tab.active {
+        background: #fff;
+        color: var(--bs-primary);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .order-tab .tab-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+    .dot-all      { background: #6c757d; }
+    .dot-pending  { background: #fd7e14; }
+    .dot-confirm  { background: #0dcaf0; }
+    .dot-shipping { background: #0d6efd; }
+    .dot-done     { background: #198754; }
+    .dot-cancel   { background: #dc3545; }
+
+    /* === TABLE === */
+    .table-orders thead th {
+        background-color: #f8f9fa;
+        color: #6c757d;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        border-bottom: 2px solid #e9ecef;
+    }
+    .table-orders tbody td {
+        vertical-align: middle;
+        padding: 1rem 0.75rem;
+    }
+    .table-orders tbody tr {
+        transition: background-color 0.15s;
+    }
+    .table-orders tbody tr:hover {
+        background-color: rgba(var(--bs-primary-rgb), 0.03);
+    }
+
+    /* === AVATAR === */
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    /* === ORDER CODE === */
+    .order-code {
+        font-family: 'SF Mono', Consolas, monospace;
+        font-weight: 700;
+        color: var(--bs-primary);
+        font-size: 0.95rem;
+    }
+
+    /* === PRICE === */
+    .price-tag {
+        font-weight: 700;
+        color: #dc3545;
+        white-space: nowrap;
+        font-size: 0.95rem;
+    }
+
+    /* === PAYMENT BADGE === */
+    .payment-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 0.35em 0.7em;
+        border-radius: 6px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        background: #f1f3f5;
+        color: #495057;
+    }
+
+    /* === ACTION BUTTON === */
+    .btn-action-icon {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s;
+    }
+    .btn-action-icon:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+    }
+
+    /* === EMPTY STATE === */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 1rem;
+    }
+</style>
+
+<!-- 1. HEADER -->
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold"><i class="bi bi-receipt"></i> Đơn hàng</h2>
-</div>
-<form method="get" class="row g-2 mb-3">
-    <div class="col-md-3">
-        <select name="trangThai" class="form-select">
-            <option value="">Tất cả trạng thái</option>
-            <option value="@TrangThaiDonHang.ChoXacNhan" selected="@(ViewBag.TrangThai == TrangThaiDonHang.ChoXacNhan)">Chờ xác nhận</option>
-            <option value="@TrangThaiDonHang.DaXacNhan" selected="@(ViewBag.TrangThai == TrangThaiDonHang.DaXacNhan)">Đã xác nhận</option>
-            <option value="@TrangThaiDonHang.DangGiao" selected="@(ViewBag.TrangThai == TrangThaiDonHang.DangGiao)">Đang giao</option>
-            <option value="@TrangThaiDonHang.DaGiao" selected="@(ViewBag.TrangThai == TrangThaiDonHang.DaGiao)">Đã giao</option>
-            <option value="@TrangThaiDonHang.DaHuy" selected="@(ViewBag.TrangThai == TrangThaiDonHang.DaHuy)">Đã hủy</option>
-        </select>
-    </div>
-    <div class="col-auto"><button class="btn btn-outline-secondary">Lọc</button></div>
-</form>
-<div class="card shadow-sm">
-    <div class="card-body table-responsive">
-        <table class="table table-hover align-middle">
-            <thead><tr><th>Mã</th><th>Khách</th><th>Ngày</th><th>Tổng</th><th>TT đơn</th><th>Thanh toán</th><th></th></tr></thead>
-            <tbody>
-            @foreach (var d in Model)
-            {
-                <tr>
-                    <td>#@d.MaDH</td>
-                    <td>@d.KhachHang?.HoTen</td>
-                    <td>@d.NgayDat.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
-                    <td>@HienThi.Tien(d.TongTien)</td>
-                    <td><span class="badge @HienThi.BadgeTrangThaiDon(d.TrangThai)">@HienThi.TrangThaiDon(d.TrangThai)</span></td>
-                    <td>@HienThi.ThanhToan(d.TrangThaiThanhToan)</td>
-                    <td class="text-end"><a asp-action="Details" asp-route-id="@d.MaDH" class="btn btn-info btn-sm text-white">Chi tiết</a></td>
-                </tr>
-            }
-            </tbody>
-        </table>
+    <div>
+        <h2 class="fw-bold text-dark mb-1">
+            <i class="bi bi-receipt-cutoff text-primary me-2"></i>Quản lý Đơn hàng
+        </h2>
+        <p class="text-muted mb-0 small">Theo dõi và xử lý các đơn hàng từ khách hàng</p>
     </div>
 </div>
+
+<!-- 2. ORDER STATUS TABS (Filter dạng tab) -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-3">
+        <form method="get" id="filterForm">
+            <input type="hidden" name="trangThai" id="trangThaiInput" value="@ViewBag.TrangThai" />
+            <div class="order-tabs">
+                <a href="javascript:;" class="order-tab @(string.IsNullOrEmpty(ViewBag.TrangThai) ? "active" : "")" data-value="">
+                    <span class="tab-dot dot-all"></span> Tất cả
+                </a>
+                <a href="javascript:;" class="order-tab @(ViewBag.TrangThai == TrangThaiDonHang.ChoXacNhan ? "active" : "")" data-value="@TrangThaiDonHang.ChoXacNhan">
+                    <span class="tab-dot dot-pending"></span> Chờ xác nhận
+                </a>
+                <a href="javascript:;" class="order-tab @(ViewBag.TrangThai == TrangThaiDonHang.DaXacNhan ? "active" : "")" data-value="@TrangThaiDonHang.DaXacNhan">
+                    <span class="tab-dot dot-confirm"></span> Đã xác nhận
+                </a>
+                <a href="javascript:;" class="order-tab @(ViewBag.TrangThai == TrangThaiDonHang.DangGiao ? "active" : "")" data-value="@TrangThaiDonHang.DangGiao">
+                    <span class="tab-dot dot-shipping"></span> Đang giao
+                </a>
+                <a href="javascript:;" class="order-tab @(ViewBag.TrangThai == TrangThaiDonHang.DaGiao ? "active" : "")" data-value="@TrangThaiDonHang.DaGiao">
+                    <span class="tab-dot dot-done"></span> Đã giao
+                </a>
+                <a href="javascript:;" class="order-tab @(ViewBag.TrangThai == TrangThaiDonHang.DaHuy ? "active" : "")" data-value="@TrangThaiDonHang.DaHuy">
+                    <span class="tab-dot dot-cancel"></span> Đã hủy
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 3. DATA TABLE -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold text-dark">Danh sách đơn hàng</h5>
+        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">
+            <i class="bi bi-receipt me-1"></i> @Model.Count() đơn
+        </span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-orders table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4 border-0">Mã đơn</th>
+                        <th class="border-0">Khách hàng</th>
+                        <th class="border-0">Thời gian</th>
+                        <th class="border-0 text-end">Tổng tiền</th>
+                        <th class="border-0 text-center">Trạng thái</th>
+                        <th class="border-0 text-center">Thanh toán</th>
+                        <th class="border-0 text-center pe-4" style="width: 90px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var d in Model)
+                    {
+                        var avatarChar = !string.IsNullOrEmpty(d.KhachHang?.HoTen) ? d.KhachHang.HoTen[0].ToString().ToUpper() : "?";
+                        
+                        <tr>
+                            <!-- Mã đơn -->
+                            <td class="ps-4">
+                                <span class="order-code">#@d.MaDH</span>
+                            </td>
+
+                            <!-- Khách hàng với avatar -->
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="avatar-circle bg-primary bg-opacity-10 text-primary fw-bold">
+                                        @avatarChar
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold text-dark">@(d.KhachHang?.HoTen ?? "Khách vãng lai")</div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Thời gian -->
+                            <td>
+                                <div class="small text-dark fw-medium">@d.NgayDat.ToLocalTime().ToString("dd/MM/yyyy")</div>
+                                <div class="small text-muted">@d.NgayDat.ToLocalTime().ToString("HH:mm")</div>
+                            </td>
+
+                            <!-- Tổng tiền -->
+                            <td class="text-end">
+                                <span class="price-tag">@HienThi.Tien(d.TongTien)</span>
+                            </td>
+
+                            <!-- Trạng thái đơn -->
+                            <td class="text-center">
+                                <span class="badge @HienThi.BadgeTrangThaiDon(d.TrangThai)">
+                                    @HienThi.TrangThaiDon(d.TrangThai)
+                                </span>
+                            </td>
+
+                            <!-- Thanh toán -->
+                            <td class="text-center">
+                                <span class="payment-badge">
+                                    <i class="bi bi-credit-card-2-front"></i>
+                                    @HienThi.ThanhToan(d.TrangThaiThanhToan)
+                                </span>
+                            </td>
+
+                            <!-- Thao tác -->
+                            <td class="text-center pe-4">
+                                <a asp-action="Details" asp-route-id="@d.MaDH"
+                                   class="btn btn-outline-primary btn-action-icon" title="Xem chi tiết">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="empty-state bg-white">
+                            <i class="bi bi-inbox display-1 text-muted opacity-25"></i>
+                            <h5 class="text-muted mt-3">Không có đơn hàng nào</h5>
+                            <p class="text-muted small mb-0">Chưa có đơn hàng nào trong khoảng lọc này.</p>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Script xử lý tab filter -->
+<script>
+    document.querySelectorAll('.order-tab').forEach(tab => {
+        tab.addEventListener('click', function () {
+            const value = this.getAttribute('data-value');
+            document.getElementById('trangThaiInput').value = value;
+            document.getElementById('filterForm').submit();
+        });
+    });
+</script>
