@@ -11,6 +11,8 @@ namespace BanSach.Models
 
         public int MaKH { get; set; }
 
+        public Guid MaYeuCau { get; set; } = Guid.NewGuid();
+
         [Display(Name = "Ngày đặt")]
         public DateTime NgayDat { get; set; } = DateTime.UtcNow;
 

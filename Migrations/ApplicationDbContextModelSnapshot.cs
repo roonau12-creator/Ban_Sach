@@ -121,6 +121,10 @@ namespace BanSach.Migrations
                     b.Property<int?>("MaSDT")
                         .HasColumnType("integer");
 
+                    b.Property<Guid>("MaYeuCau")
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
                     b.Property<DateTime>("NgayDat")
                         .HasColumnType("timestamp with time zone");
 
@@ -154,6 +158,10 @@ namespace BanSach.Migrations
                     b.HasIndex("MaKH");
 
                     b.HasIndex("MaSDT");
+
+                    b.HasIndex("MaYeuCau")
+                        .IsUnique()
+                        .HasDatabaseName("IX_DonHangs_MaYeuCau");
 
                     b.ToTable("DonHangs");
                 });

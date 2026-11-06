@@ -93,6 +93,15 @@ namespace BanSach.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<DonHang>()
+                .HasIndex(x => x.MaYeuCau)
+                .IsUnique()
+                .HasDatabaseName("IX_DonHangs_MaYeuCau");
+
+            modelBuilder.Entity<DonHang>()
+                .Property(x => x.MaYeuCau)
+                .HasDefaultValueSql("gen_random_uuid()");
+
+            modelBuilder.Entity<DonHang>()
                 .HasOne(x => x.DiaChi)
                 .WithMany()
                 .HasForeignKey(x => x.MaDC)

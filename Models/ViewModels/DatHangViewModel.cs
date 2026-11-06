@@ -5,6 +5,8 @@ namespace BanSach.Models.ViewModels
 {
     public class DatHangViewModel
     {
+        public Guid MaYeuCau { get; set; }
+
         [Display(Name = "Địa chỉ giao hàng")]
         public int MaDC { get; set; }
 
