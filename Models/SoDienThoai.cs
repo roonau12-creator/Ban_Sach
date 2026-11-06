@@ -11,6 +11,7 @@ namespace BanSach.Models
 
         [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
         [StringLength(20)]
+        [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
         [Display(Name = "Số điện thoại")]
         public string SoDT { get; set; } = string.Empty;
 
