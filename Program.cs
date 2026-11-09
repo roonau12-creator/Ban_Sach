@@ -14,6 +14,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 builder.Services.AddScoped<SessionGioHang>();
+builder.Services.AddScoped<GioHangService>();
 builder.Services.AddScoped<AnhBiaHelper>();
 builder.Services.AddDbContext<ApplicationDbContext>(
     options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
