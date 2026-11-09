@@ -15,11 +15,16 @@ namespace BanSach.Areas.Customer.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly SessionGioHang _gioHang;
+        private readonly GioHangService _gioHangService;
 
-        public DonHangController(ApplicationDbContext context, SessionGioHang gioHang)
+        public DonHangController(
+            ApplicationDbContext context,
+            SessionGioHang gioHang,
+            GioHangService gioHangService)
         {
             _context = context;
             _gioHang = gioHang;
+            _gioHangService = gioHangService;
         }
 
         public async Task<IActionResult> DatHang()
@@ -29,6 +34,11 @@ namespace BanSach.Areas.Customer.Controllers
             {
                 TempData["error"] = "Tài khoản quản trị không đặt hàng từ giỏ khách. Hãy dùng tài khoản khách hàng.";
                 return RedirectToAction("Index", "GioHang");
+            }
+
+            if (await _gioHangService.DongBoAsync())
+            {
+                TempData["error"] = "Giỏ hàng đã được cập nhật theo giá và tồn kho hiện tại. Vui lòng kiểm tra lại.";
             }
 
             var items = _gioHang.LayGio();
@@ -65,6 +75,12 @@ namespace BanSach.Areas.Customer.Controllers
             var maKH = HttpContext.Session.GetInt32(SessionKeys.MaKH);
             if (maKH == null) return RedirectToAction("DangNhap", "TaiKhoan");
 
+            if (await _gioHangService.DongBoAsync())
+            {
+                TempData["error"] = "Giá hoặc tồn kho đã thay đổi. Vui lòng kiểm tra lại giỏ hàng trước khi đặt.";
+                return RedirectToAction("Index", "GioHang");
+            }
+
             var items = _gioHang.LayGio();
             if (!items.Any())
             {
@@ -83,16 +99,64 @@ namespace BanSach.Areas.Customer.Controllers
             await using var tx = await _context.Database.BeginTransactionAsync();
             try
             {
+                var maSachs = items.Select(x => x.MaSach).Distinct().ToList();
+                var sachs = await _context.Sachs
+                    .Include(x => x.NhomSach)
+                    .Where(x => maSachs.Contains(x.MaSach))
+                    .ToDictionaryAsync(x => x.MaSach);
+                var gioDaThayDoi = false;
+
                 foreach (var item in items)
                 {
-                    var sach = await _context.Sachs.FirstOrDefaultAsync(x => x.MaSach == item.MaSach);
-                    if (sach == null || sach.SoLuongTon < item.SoLuong)
+                    if (!sachs.TryGetValue(item.MaSach, out var sach)
+                        || !GioHangService.CoTheBan(item, sach))
                     {
-                        TempData["error"] = $"Sách \"{item.TenSach}\" không đủ số lượng tồn.";
+                        await tx.RollbackAsync();
+                        await _gioHangService.DongBoAsync();
+                        TempData["error"] = $"Sách \"{item.TenSach}\" hiện không được kinh doanh hoặc đã hết hàng.";
                         return RedirectToAction("Index", "GioHang");
                     }
 
-                    sach.SoLuongTon -= item.SoLuong;
+                    var soLuongCu = item.SoLuong;
+                    var giaCu = item.GiaBan;
+                    var tenCu = item.TenSach;
+                    var anhCu = item.AnhBia;
+                    item.SoLuong = Math.Min(item.SoLuong, sach.SoLuongTon);
+                    item.TenSach = sach.TenSach;
+                    item.AnhBia = sach.AnhBia;
+                    item.GiaBan = sach.GiaBan;
+                    gioDaThayDoi |= soLuongCu != item.SoLuong
+                        || giaCu != item.GiaBan
+                        || tenCu != item.TenSach
+                        || anhCu != item.AnhBia;
+                }
+
+                if (gioDaThayDoi)
+                {
+                    await tx.RollbackAsync();
+                    _gioHang.LuuGio(items);
+                    TempData["error"] = "Giá hoặc tồn kho đã thay đổi. Vui lòng kiểm tra lại giỏ hàng trước khi đặt.";
+                    return RedirectToAction("Index", "GioHang");
+                }
+
+                foreach (var item in items)
+                {
+                    var affected = await _context.Sachs
+                        .Where(x => x.MaSach == item.MaSach
+                            && x.SoLuongTon >= item.SoLuong
+                            && x.GiaBan == sachs[item.MaSach].GiaBan
+                            && x.NhomSach != null
+                            && x.NhomSach.TrangThai)
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(x => x.SoLuongTon, x => x.SoLuongTon - item.SoLuong));
+
+                    if (affected != 1)
+                    {
+                        await tx.RollbackAsync();
+                        await _gioHangService.DongBoAsync();
+                        TempData["error"] = $"Giá bán hoặc tồn kho của sách \"{item.TenSach}\" vừa thay đổi. Vui lòng kiểm tra lại giỏ hàng.";
+                        return RedirectToAction("Index", "GioHang");
+                    }
                 }
 
                 var don = new DonHang
@@ -100,7 +164,7 @@ namespace BanSach.Areas.Customer.Controllers
                     MaKH = maKH.Value,
                     NgayDat = DateTime.UtcNow,
                     TrangThai = TrangThaiDonHang.ChoXacNhan,
-                    TongTien = items.Sum(x => x.ThanhTien),
+                    TongTien = items.Sum(x => sachs[x.MaSach].GiaBan * x.SoLuong),
                     PhuongThucThanhToan = model.PhuongThucThanhToan == PhuongThucThanhToan.ChuyenKhoan
                         ? PhuongThucThanhToan.ChuyenKhoan
                         : PhuongThucThanhToan.COD,
@@ -116,7 +180,7 @@ namespace BanSach.Areas.Customer.Controllers
                     {
                         MaSach = x.MaSach,
                         SoLuong = x.SoLuong,
-                        DonGia = x.GiaBan
+                        DonGia = sachs[x.MaSach].GiaBan
                     }).ToList(),
                     GiaoHang = new GiaoHang
                     {

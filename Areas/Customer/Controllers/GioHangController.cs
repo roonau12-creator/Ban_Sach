@@ -11,15 +11,25 @@ namespace BanSach.Areas.Customer.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly SessionGioHang _gioHang;
+        private readonly GioHangService _gioHangService;
 
-        public GioHangController(ApplicationDbContext context, SessionGioHang gioHang)
+        public GioHangController(
+            ApplicationDbContext context,
+            SessionGioHang gioHang,
+            GioHangService gioHangService)
         {
             _context = context;
             _gioHang = gioHang;
+            _gioHangService = gioHangService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            if (await _gioHangService.DongBoAsync())
+            {
+                TempData["error"] = "Giỏ hàng đã được cập nhật theo giá và tồn kho hiện tại. Vui lòng kiểm tra lại.";
+            }
+
             return View(_gioHang.LayGio());
         }
 
@@ -27,9 +37,21 @@ namespace BanSach.Areas.Customer.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Them(int maSach, int soLuong = 1)
         {
-            if (soLuong < 1) soLuong = 1;
-            var sach = await _context.Sachs.FindAsync(maSach);
+            if (soLuong < 1)
+            {
+                TempData["error"] = "Số lượng phải lớn hơn 0.";
+                return RedirectToAction("Details", "Sach", new { id = maSach });
+            }
+
+            var sach = await _context.Sachs
+                .Include(x => x.NhomSach)
+                .FirstOrDefaultAsync(x => x.MaSach == maSach);
             if (sach == null) return NotFound();
+            if (!GioHangService.CoTheBan(new GioHangItem { SoLuong = 1 }, sach))
+            {
+                TempData["error"] = "Sách hiện không được kinh doanh hoặc đã hết hàng.";
+                return RedirectToAction("Details", "Sach", new { id = maSach });
+            }
 
             var gio = _gioHang.LayGio();
             var item = gio.FirstOrDefault(x => x.MaSach == maSach);
@@ -54,6 +76,8 @@ namespace BanSach.Areas.Customer.Controllers
             else
             {
                 item.SoLuong = tong;
+                item.TenSach = sach.TenSach;
+                item.AnhBia = sach.AnhBia;
                 item.GiaBan = sach.GiaBan;
             }
 
@@ -77,16 +101,30 @@ namespace BanSach.Areas.Customer.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CapNhat(int maSach, int soLuong)
         {
-            var sach = await _context.Sachs.FindAsync(maSach);
-            if (sach == null) return NotFound();
+            if (soLuong < 1)
+            {
+                TempData["error"] = "Số lượng phải lớn hơn 0. Hãy dùng nút xóa để bỏ sách khỏi giỏ.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var sach = await _context.Sachs
+                .Include(x => x.NhomSach)
+                .FirstOrDefaultAsync(x => x.MaSach == maSach);
+            if (sach == null)
+            {
+                await _gioHangService.DongBoAsync();
+                TempData["error"] = "Sách không còn tồn tại.";
+                return RedirectToAction(nameof(Index));
+            }
 
             var gio = _gioHang.LayGio();
             var item = gio.FirstOrDefault(x => x.MaSach == maSach);
             if (item == null) return RedirectToAction(nameof(Index));
 
-            if (soLuong < 1)
+            if (!GioHangService.CoTheBan(item, sach))
             {
                 gio.Remove(item);
+                TempData["error"] = "Sách hiện không được kinh doanh hoặc đã hết hàng.";
             }
             else if (soLuong > sach.SoLuongTon)
             {
@@ -98,6 +136,9 @@ namespace BanSach.Areas.Customer.Controllers
                 item.SoLuong = soLuong;
             }
 
+            item.TenSach = sach.TenSach;
+            item.AnhBia = sach.AnhBia;
+            item.GiaBan = sach.GiaBan;
             _gioHang.LuuGio(gio);
             return RedirectToAction(nameof(Index));
         }
