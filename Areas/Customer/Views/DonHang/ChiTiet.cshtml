@@ -30,6 +30,10 @@
                     }
                     </tbody>
                 </table>
+                @if (Model.SoTienGiam > 0)
+                {
+                    <div class="text-success">Mã khuyến mãi @Model.MaKhuyenMai: -@HienThi.Tien(Model.SoTienGiam)</div>
+                }
                 <div class="fw-bold fs-5 mb-3">Tổng: @HienThi.Tien(Model.TongTien)</div>
                 @if (Model.TrangThai == TrangThaiDonHang.ChoXacNhan)
                 {

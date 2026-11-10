@@ -49,6 +49,7 @@ namespace BanSach.Areas.Customer.Controllers
             var model = new DatHangViewModel
             {
                 Items = items,
+                TongHang = items.Sum(x => x.ThanhTien),
                 TongTien = items.Sum(x => x.ThanhTien),
                 MaDC = diaChis.FirstOrDefault(x => x.MacDinh)?.MaDC ?? diaChis[0].MaDC,
                 MaSDT = sdts.FirstOrDefault(x => x.MacDinh)?.MaSDT ?? sdts[0].MaSDT,
@@ -60,7 +61,7 @@ namespace BanSach.Areas.Customer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DatHang(DatHangViewModel model)
+        public async Task<IActionResult> DatHang(DatHangViewModel model, string? hanhDong)
         {
             var maKH = HttpContext.Session.GetInt32(SessionKeys.MaKH);
             if (maKH == null) return RedirectToAction("DangNhap", "TaiKhoan");
@@ -72,12 +73,51 @@ namespace BanSach.Areas.Customer.Controllers
                 return RedirectToAction("Index", "GioHang");
             }
 
+            var diaChis = await _context.DiaChis.Where(x => x.MaKH == maKH).ToListAsync();
+            var sdts = await _context.SoDienThoais.Where(x => x.MaKH == maKH).ToListAsync();
+            if (!diaChis.Any() || !sdts.Any())
+            {
+                TempData["error"] = "Hãy thêm ít nhất một địa chỉ và một số điện thoại trước khi đặt hàng.";
+                return RedirectToAction("Index", !diaChis.Any() ? "DiaChi" : "SoDienThoai");
+            }
+
+            model.Items = items;
+            model.TongHang = items.Sum(x => x.ThanhTien);
+            model.GiamGia = 0;
+            model.TongTien = model.TongHang;
+            model.DiaChis = new SelectList(diaChis, "MaDC", "DiaChiChiTiet", model.MaDC);
+            model.SoDienThoais = new SelectList(sdts, "MaSDT", "SoDT", model.MaSDT);
+
+            if (hanhDong == "ap-dung")
+            {
+                var (khuyenMai, loi, giamGia) = await KiemTraKhuyenMaiAsync(model.MaKhuyenMai, model.TongHang, true);
+                if (loi != null)
+                {
+                    ModelState.AddModelError(nameof(model.MaKhuyenMai), loi);
+                }
+                else if (khuyenMai != null)
+                {
+                    model.GiamGia = giamGia;
+                    model.TongTien = model.TongHang - giamGia;
+                }
+
+                return View(model);
+            }
+
             var diaChi = await _context.DiaChis.FirstOrDefaultAsync(x => x.MaDC == model.MaDC && x.MaKH == maKH);
             var sdt = await _context.SoDienThoais.FirstOrDefaultAsync(x => x.MaSDT == model.MaSDT && x.MaKH == maKH);
             if (diaChi == null || sdt == null)
             {
                 TempData["error"] = "Địa chỉ hoặc số điện thoại không hợp lệ.";
                 return RedirectToAction(nameof(DatHang));
+            }
+
+            var (maKhuyenMai, loiKhuyenMai, soTienGiam) =
+                await KiemTraKhuyenMaiAsync(model.MaKhuyenMai, model.TongHang, false);
+            if (loiKhuyenMai != null)
+            {
+                ModelState.AddModelError(nameof(model.MaKhuyenMai), loiKhuyenMai);
+                return View(model);
             }
 
             await using var tx = await _context.Database.BeginTransactionAsync();
@@ -100,7 +140,10 @@ namespace BanSach.Areas.Customer.Controllers
                     MaKH = maKH.Value,
                     NgayDat = DateTime.UtcNow,
                     TrangThai = TrangThaiDonHang.ChoXacNhan,
-                    TongTien = items.Sum(x => x.ThanhTien),
+                    TongTien = model.TongHang - soTienGiam,
+                    SoTienGiam = soTienGiam,
+                    MaKM = maKhuyenMai?.MaKM,
+                    MaKhuyenMai = maKhuyenMai?.MaCode,
                     PhuongThucThanhToan = model.PhuongThucThanhToan == PhuongThucThanhToan.ChuyenKhoan
                         ? PhuongThucThanhToan.ChuyenKhoan
                         : PhuongThucThanhToan.COD,
@@ -137,6 +180,31 @@ namespace BanSach.Areas.Customer.Controllers
                 TempData["error"] = "Không thể đặt hàng. Vui lòng thử lại.";
                 return RedirectToAction("Index", "GioHang");
             }
+        }
+
+        private async Task<(KhuyenMai? KhuyenMai, string? Loi, decimal GiamGia)> KiemTraKhuyenMaiAsync(
+            string? maCode,
+            decimal tongHang,
+            bool batBuoc)
+        {
+            if (string.IsNullOrWhiteSpace(maCode))
+            {
+                return batBuoc
+                    ? (null, "Vui lòng nhập mã khuyến mãi.", 0)
+                    : (null, null, 0);
+            }
+
+            var maChuanHoa = KhuyenMaiHelper.ChuanHoaMa(maCode);
+            var khuyenMai = await _context.KhuyenMais.SingleOrDefaultAsync(x => x.MaCode == maChuanHoa);
+            if (khuyenMai == null)
+            {
+                return (null, "Mã khuyến mãi không hợp lệ.", 0);
+            }
+
+            var loi = KhuyenMaiHelper.KiemTraApDung(khuyenMai, tongHang, DateTime.UtcNow);
+            return loi == null
+                ? (khuyenMai, null, KhuyenMaiHelper.TinhSoTienGiam(khuyenMai, tongHang))
+                : (null, loi, 0);
         }
 
         public async Task<IActionResult> LichSu()
