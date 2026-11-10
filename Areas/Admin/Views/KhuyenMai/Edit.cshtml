@@ -1,0 +1,29 @@
+@model BanSach.Models.KhuyenMai
+@{
+    ViewData["Title"] = "Sửa khuyến mãi";
+}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header fw-bold">Cập nhật chương trình khuyến mãi</div>
+            <div class="card-body">
+                <form asp-action="Edit" asp-route-id="@Model.MaKM" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <partial name="_KhuyenMaiFields" model="Model" />
+                    <div class="form-check mt-3">
+                        <input asp-for="DangHoatDong" class="form-check-input" />
+                        <label asp-for="DangHoatDong" class="form-check-label"></label>
+                    </div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+                        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

@@ -79,6 +79,7 @@ BanSach/
 │   │   │   ├── NhaXuatBanController.cs
 │   │   │   ├── SachController.cs
 │   │   │   ├── KhachHangController.cs
+│   │   │   ├── KhuyenMaiController.cs
 │   │   │   ├── DonHangController.cs
 │   │   │   ├── DashboardController.cs
 │   │   │   ├── ThongKeController.cs
@@ -135,6 +136,7 @@ BanSach/
 │   ├── KhachHang.cs
 │   ├── TaiKhoan.cs
 │   ├── DonHang.cs
+│       ├── KhuyenMai.cs
 │   ├── ChiTietDonHang.cs
 │   ├── GiaoHang.cs
 │   ├── DiaChi.cs
@@ -194,6 +196,7 @@ Hệ thống dùng **Session** thay vì ASP.NET Identity:
 | Nhà xuất bản | `/Admin/NhaXuatBan` | CRUD nhà xuất bản |
 | Sách | `/Admin/Sach` | CRUD sách, upload ảnh bìa, gán tác giả |
 | Khách hàng | `/Admin/KhachHang` | Xem danh sách, chi tiết khách hàng |
+| Khuyến mãi | `/Admin/KhuyenMai` | Tạo, sửa, bật/tắt mã giảm giá và điều kiện áp dụng |
 | Đơn hàng | `/Admin/DonHang` | Xem & cập nhật trạng thái đơn hàng |
 | Thống kê | `/Admin/ThongKe` | Báo cáo doanh thu, đơn hàng |
 
@@ -204,7 +207,7 @@ Hệ thống dùng **Session** thay vì ASP.NET Identity:
 | Trang chủ | `/` | Danh sách sách nổi bật, sách mới |
 | Chi tiết sách | `/Sach/Details/{id}` | Xem thông tin sách |
 | Giỏ hàng | `/GioHang` | Thêm/xóa/cập nhật số lượng (Session) |
-| Đặt hàng | `/DonHang/DatHang` | Đặt hàng, chọn địa chỉ & SĐT |
+| Đặt hàng | `/DonHang/DatHang` | Đặt hàng, chọn địa chỉ & SĐT, áp dụng một mã khuyến mãi |
 | Đơn hàng | `/DonHang` | Lịch sử & theo dõi đơn hàng |
 | Tài khoản | `/TaiKhoan` | Đăng ký, đăng nhập, quên mật khẩu |
 | Địa chỉ | `/DiaChi` | Quản lý địa chỉ giao hàng |
@@ -269,6 +272,7 @@ dotnet ef database drop               # Xóa database
 - [x] Xác thực & phân quyền dựa trên Session
 - [x] Module Sách, Tác giả, Nhà xuất bản, Nhóm sách (Admin)
 - [x] Quản lý khách hàng & đơn hàng (Admin)
+- [x] Quản lý mã khuyến mãi và áp dụng giảm giá phía máy chủ
 - [x] Dashboard & Thống kê (Admin)
 - [x] Trang chủ & chi tiết sách (Customer)
 - [x] Giỏ hàng (Session)

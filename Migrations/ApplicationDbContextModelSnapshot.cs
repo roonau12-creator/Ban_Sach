@@ -118,6 +118,13 @@ namespace BanSach.Migrations
                     b.Property<int>("MaKH")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("MaKM")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MaKhuyenMai")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
                     b.Property<int?>("MaSDT")
                         .HasColumnType("integer");
 
@@ -133,6 +140,9 @@ namespace BanSach.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
+
+                    b.Property<decimal>("SoTienGiam")
+                        .HasColumnType("numeric(18,2)");
 
                     b.Property<decimal>("TongTien")
                         .HasColumnType("numeric(18,2)");
@@ -152,6 +162,8 @@ namespace BanSach.Migrations
                     b.HasIndex("MaDC");
 
                     b.HasIndex("MaKH");
+
+                    b.HasIndex("MaKM");
 
                     b.HasIndex("MaSDT");
 
@@ -211,6 +223,55 @@ namespace BanSach.Migrations
                         .IsUnique();
 
                     b.ToTable("KhachHangs");
+                });
+
+            modelBuilder.Entity("BanSach.Models.KhuyenMai", b =>
+                {
+                    b.Property<int>("MaKM")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("MaKM"));
+
+                    b.Property<bool>("DangHoatDong")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("DonHangToiThieu")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("GiaTriGiam")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal?>("GiamToiDa")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("LoaiGiamGia")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("MaCode")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<DateTime>("NgayBatDau")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("NgayKetThuc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TenKhuyenMai")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.HasKey("MaKM");
+
+                    b.HasIndex("MaCode")
+                        .IsUnique();
+
+                    b.ToTable("KhuyenMais");
                 });
 
             modelBuilder.Entity("BanSach.Models.NhaXuatBan", b =>
@@ -477,6 +538,11 @@ namespace BanSach.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("BanSach.Models.KhuyenMai", "KhuyenMai")
+                        .WithMany()
+                        .HasForeignKey("MaKM")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("BanSach.Models.SoDienThoai", "SoDienThoai")
                         .WithMany()
                         .HasForeignKey("MaSDT")
@@ -485,6 +551,8 @@ namespace BanSach.Migrations
                     b.Navigation("DiaChi");
 
                     b.Navigation("KhachHang");
+
+                    b.Navigation("KhuyenMai");
 
                     b.Navigation("SoDienThoai");
                 });

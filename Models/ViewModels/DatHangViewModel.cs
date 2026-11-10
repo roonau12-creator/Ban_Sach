@@ -19,7 +19,13 @@ namespace BanSach.Models.ViewModels
         [Display(Name = "Ghi chú")]
         public string? GhiChu { get; set; }
 
+        [StringLength(40)]
+        [Display(Name = "Mã khuyến mãi")]
+        public string? MaKhuyenMai { get; set; }
+
         public List<GioHangItem> Items { get; set; } = new();
+        public decimal TongHang { get; set; }
+        public decimal GiamGia { get; set; }
         public decimal TongTien { get; set; }
         public IEnumerable<SelectListItem> DiaChis { get; set; } = Enumerable.Empty<SelectListItem>();
         public IEnumerable<SelectListItem> SoDienThoais { get; set; } = Enumerable.Empty<SelectListItem>();

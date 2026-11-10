@@ -22,6 +22,16 @@ namespace BanSach.Models
         [Display(Name = "Tổng tiền")]
         public decimal TongTien { get; set; }
 
+        [Column(TypeName = "numeric(18,2)")]
+        [Display(Name = "Số tiền giảm")]
+        public decimal SoTienGiam { get; set; }
+
+        public int? MaKM { get; set; }
+
+        [StringLength(40)]
+        [Display(Name = "Mã khuyến mãi")]
+        public string? MaKhuyenMai { get; set; }
+
         [StringLength(30)]
         [Display(Name = "Phương thức thanh toán")]
         public string PhuongThucThanhToan { get; set; } = Helpers.PhuongThucThanhToan.COD;
@@ -50,6 +60,7 @@ namespace BanSach.Models
         public KhachHang? KhachHang { get; set; }
         public DiaChi? DiaChi { get; set; }
         public SoDienThoai? SoDienThoai { get; set; }
+        public KhuyenMai? KhuyenMai { get; set; }
         public ICollection<ChiTietDonHang> ChiTietDonHangs { get; set; } = new List<ChiTietDonHang>();
         public GiaoHang? GiaoHang { get; set; }
     }
