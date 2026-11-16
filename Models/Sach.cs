@@ -52,5 +52,6 @@ namespace BanSach.Models
         public NhaXuatBan? NhaXuatBan { get; set; }
         public ICollection<SachTacGia> SachTacGias { get; set; } = new List<SachTacGia>();
         public ICollection<ChiTietDonHang> ChiTietDonHangs { get; set; } = new List<ChiTietDonHang>();
+        public ICollection<DanhGia> DanhGias { get; set; } = new List<DanhGia>();
     }
 }
