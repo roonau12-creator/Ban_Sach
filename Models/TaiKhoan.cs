@@ -36,5 +36,6 @@ namespace BanSach.Models
         public DateTime? ResetTokenHetHan { get; set; }
 
         public KhachHang? KhachHang { get; set; }
+        public ICollection<DanhGia> DanhGias { get; set; } = new List<DanhGia>();
     }
 }

@@ -22,6 +22,7 @@ namespace BanSach.Data
         public DbSet<DonHang> DonHangs { get; set; }
         public DbSet<ChiTietDonHang> ChiTietDonHangs { get; set; }
         public DbSet<GiaoHang> GiaoHangs { get; set; }
+        public DbSet<DanhGia> DanhGias { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -120,6 +121,30 @@ namespace BanSach.Data
                 .HasOne(x => x.DonHang)
                 .WithOne(x => x.GiaoHang)
                 .HasForeignKey<GiaoHang>(x => x.MaDH)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DanhGia>()
+                .HasIndex(x => new { x.MaTK, x.MaSach })
+                .IsUnique();
+
+            modelBuilder.Entity<DanhGia>()
+                .HasIndex(x => new { x.MaSach, x.An });
+
+            modelBuilder.Entity<DanhGia>()
+                .ToTable("DanhGias", table => table.HasCheckConstraint(
+                    "CK_DanhGias_SoSao",
+                    "\"SoSao\" BETWEEN 1 AND 5"));
+
+            modelBuilder.Entity<DanhGia>()
+                .HasOne(x => x.TaiKhoan)
+                .WithMany(x => x.DanhGias)
+                .HasForeignKey(x => x.MaTK)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DanhGia>()
+                .HasOne(x => x.Sach)
+                .WithMany(x => x.DanhGias)
+                .HasForeignKey(x => x.MaSach)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }
