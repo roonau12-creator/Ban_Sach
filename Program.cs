@@ -1,5 +1,6 @@
 using BanSach.Data;
 using BanSach.Helpers;
+using BanSach.Services.Email;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,9 @@ builder.Services.AddSession(options =>
 });
 builder.Services.AddScoped<SessionGioHang>();
 builder.Services.AddScoped<AnhBiaHelper>();
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
+builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
+builder.Services.AddHostedService<EmailOutboxWorker>();
 builder.Services.AddDbContext<ApplicationDbContext>(
     options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
