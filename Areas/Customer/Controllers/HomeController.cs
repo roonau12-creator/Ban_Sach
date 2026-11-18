@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using BanSach.Data;
+using BanSach.Helpers;
 using BanSach.Models;
 using BanSach.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -32,6 +33,9 @@ namespace BanSach.Areas.Customer.Controllers
                     .Where(x => x.NoiBat)
                     .OrderByDescending(x => x.MaSach)
                     .Take(8)
+                    .ToListAsync(),
+                SachBanChays = await SachBanChayQuery
+                    .LayTopSachBanChay(_context.ChiTietDonHangs)
                     .ToListAsync(),
                 ChuDes = await _context.ChuDes.OrderBy(x => x.TenChuDe).ToListAsync()
             };
