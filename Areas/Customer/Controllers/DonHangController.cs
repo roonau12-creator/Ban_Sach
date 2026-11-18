@@ -15,11 +15,16 @@ namespace BanSach.Areas.Customer.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly SessionGioHang _gioHang;
+        private readonly ThongBaoService _thongBaoService;
 
-        public DonHangController(ApplicationDbContext context, SessionGioHang gioHang)
+        public DonHangController(
+            ApplicationDbContext context,
+            SessionGioHang gioHang,
+            ThongBaoService thongBaoService)
         {
             _context = context;
             _gioHang = gioHang;
+            _thongBaoService = thongBaoService;
         }
 
         public async Task<IActionResult> DatHang()
@@ -126,6 +131,12 @@ namespace BanSach.Areas.Customer.Controllers
 
                 _context.DonHangs.Add(don);
                 await _context.SaveChangesAsync();
+                await _thongBaoService.TaoChoQuanTriVienAsync(
+                    don,
+                    $"order:{don.MaDH}:placed",
+                    "Có đơn hàng mới",
+                    $"Đơn hàng #{don.MaDH} vừa được đặt.");
+                await _context.SaveChangesAsync();
                 await tx.CommitAsync();
                 _gioHang.XoaGio();
                 TempData["success"] = "Đặt hàng thành công!";
@@ -169,6 +180,7 @@ namespace BanSach.Areas.Customer.Controllers
                 return RedirectToAction(nameof(ChiTiet), new { id });
             }
 
+            var trangThaiCu = don.TrangThai;
             don.TrangThai = TrangThaiDonHang.DaHuy;
             foreach (var ct in don.ChiTietDonHangs)
             {
@@ -178,6 +190,11 @@ namespace BanSach.Areas.Customer.Controllers
                 }
             }
 
+            await _thongBaoService.TaoChoQuanTriVienAsync(
+                don,
+                $"order:{don.MaDH}:status:{trangThaiCu}:{don.TrangThai}",
+                "Khách hàng đã hủy đơn hàng",
+                $"Đơn hàng #{don.MaDH} đã được khách hàng hủy.");
             await _context.SaveChangesAsync();
             TempData["success"] = "Đã hủy đơn hàng.";
             return RedirectToAction(nameof(ChiTiet), new { id });

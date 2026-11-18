@@ -52,5 +52,6 @@ namespace BanSach.Models
         public SoDienThoai? SoDienThoai { get; set; }
         public ICollection<ChiTietDonHang> ChiTietDonHangs { get; set; } = new List<ChiTietDonHang>();
         public GiaoHang? GiaoHang { get; set; }
+        public ICollection<ThongBao> ThongBaos { get; set; } = new List<ThongBao>();
     }
 }
