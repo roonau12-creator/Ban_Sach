@@ -15,6 +15,7 @@ BanSach là ứng dụng web quản lý và bán sách, xây dựng bằng C# tr
 | Bootstrap | 5.3.3 |
 | jQuery | 3.7.1 |
 | jQuery Validation / Unobtrusive | 1.21.0 |
+| Excel | ClosedXML 0.104.2 |
 
 Database: PostgreSQL (mặc định `localhost:5432`, database `BanSach`).
 
@@ -88,7 +89,7 @@ BanSach/
 │   │       ├── TacGia/       (Index, Create, Edit, Details, Delete)
 │   │       ├── NhomSach/     (Index, Create, Edit, Details, Delete)
 │   │       ├── NhaXuatBan/   (Index, Create, Edit, Details, Delete)
-│   │       ├── Sach/         (Index, Create, Edit, Details, Delete)
+│   │       ├── Sach/         (Index, Create, Edit, Details, Delete, NhapExcel)
 │   │       ├── KhachHang/    (Index, Details)
 │   │       ├── DonHang/      (Index, Details)
 │   │       ├── Dashboard/
@@ -121,6 +122,7 @@ BanSach/
 │   ├── HangSo.cs                     # Hằng số vai trò, trạng thái, session keys
 │   ├── SessionGioHang.cs             # Quản lý giỏ hàng qua session
 │   ├── AnhBiaHelper.cs               # Upload/xử lý ảnh bìa sách
+│   ├── SachExcelService.cs           # Nhập và xuất dữ liệu sách Excel
 │   └── DbSeeder.cs                   # Seed dữ liệu mẫu khi khởi động
 ├── Migrations/
 │   ├── 20260913024742_ChuDe.cs
