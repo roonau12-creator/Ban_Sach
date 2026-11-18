@@ -200,10 +200,44 @@
         <h2><i class="bi bi-journal-bookmark-fill me-2"></i>Quản lý sách</h2>
         <p>Quản lý danh mục sách, tồn kho và thông tin xuất bản.</p>
     </div>
-    <a asp-action="Create" class="btn-add">
-        <i class="bi bi-plus-circle-fill"></i> Thêm sách mới
-    </a>
+    <div class="d-flex flex-wrap gap-2">
+        <a asp-action="Create" class="btn-add">
+            <i class="bi bi-plus-circle-fill"></i> Thêm sách mới
+        </a>
+        <a asp-action="NhapExcel" class="btn-add">
+            <i class="bi bi-file-earmark-arrow-up"></i> Nhập Excel
+        </a>
+        <a asp-action="TaiMauNhapExcel" class="btn-add">
+            <i class="bi bi-download"></i> Tải mẫu
+        </a>
+    </div>
 </div>
+
+<form asp-action="XuatExcel" method="get" class="filter-card">
+    <div class="card-body">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <select name="maCD" class="form-select" asp-items="ViewBag.ChuDes">
+                    <option value="">Tất cả chủ đề</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select name="tinhTrang" class="form-select">
+                    <option value="">Tất cả tình trạng</option>
+                    <option value="ConHang">Còn hàng</option>
+                    <option value="HetHang">Hết hàng</option>
+                    <option value="SachMoi">Sách mới</option>
+                    <option value="NoiBat">Nổi bật</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-filter">
+                    <i class="bi bi-file-earmark-arrow-down me-1"></i> Xuất Excel
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
 
 <!-- Filter -->
 <form method="get" class="filter-card">

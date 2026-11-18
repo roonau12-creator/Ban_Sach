@@ -1,0 +1,107 @@
+@model BanSach.Models.ViewModels.SachExcelImportPreviewViewModel
+@{
+    ViewData["Title"] = "Nhập sách từ Excel";
+}
+
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Nhập sách từ Excel</h4>
+        <a asp-action="TaiMauNhapExcel" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-download"></i> Tải mẫu Excel
+        </a>
+    </div>
+    <div class="card-body">
+        <p>Chỉ nhận file .xlsx, tối đa 5 MB và 1.000 dòng. Tên sách trùng sẽ bị từ chối; file chỉ được nhập khi tất cả dòng hợp lệ.</p>
+        <form asp-action="XemTruocExcel" method="post" enctype="multipart/form-data" class="mb-4">
+            @Html.AntiForgeryToken()
+            <div class="input-group">
+                <input type="file" name="file" class="form-control" accept=".xlsx" required />
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-search"></i> Kiểm tra file
+                </button>
+            </div>
+        </form>
+
+        @if (Model.FileErrors.Any())
+        {
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach (var error in Model.FileErrors)
+                    {
+                        <li>@error</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        @if (Model.Rows.Any())
+        {
+            <h5 class="mb-3">Xem trước (@Model.Rows.Count dòng)</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>Dòng</th>
+                            <th>Tên sách</th>
+                            <th>Mã chủ đề</th>
+                            <th>Mã nhóm</th>
+                            <th>Mã NXB</th>
+                            <th>Giá bán</th>
+                            <th>Tồn kho</th>
+                            <th>Lỗi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var row in Model.Rows)
+                    {
+                        <tr class="@(row.Errors.Any() ? "table-danger" : "")">
+                            <td>@row.RowNumber</td>
+                            <td>@row.TenSach</td>
+                            <td>@(row.MaCD?.ToString() ?? "—")</td>
+                            <td>@(row.MaNhom?.ToString() ?? "—")</td>
+                            <td>@(row.MaNXB?.ToString() ?? "—")</td>
+                            <td>@(row.GiaBan?.ToString("N0") ?? "—")</td>
+                            <td>@(row.SoLuongTon?.ToString() ?? "—")</td>
+                            <td>
+                                @if (row.Errors.Any())
+                                {
+                                    <ul class="mb-0 ps-3">
+                                        @foreach (var error in row.Errors)
+                                        {
+                                            <li>@error</li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <span class="text-success">Hợp lệ</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (Model.CanConfirm)
+            {
+                <form asp-action="XacNhanNhapExcel" method="post" class="d-flex justify-content-end">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="token" value="@Model.Token" />
+                    <button class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Xác nhận nhập @Model.Rows.Count sách
+                    </button>
+                </form>
+            }
+            else
+            {
+                <div class="alert alert-warning mb-0">
+                    Chưa lưu dữ liệu nào. Hãy sửa các lỗi rồi tải lại file để nhập toàn bộ.
+                </div>
+            }
+        }
+    </div>
+    <div class="card-footer">
+        <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
+    </div>
+</div>
