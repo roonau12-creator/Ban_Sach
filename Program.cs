@@ -15,6 +15,7 @@ builder.Services.AddSession(options =>
 });
 builder.Services.AddScoped<SessionGioHang>();
 builder.Services.AddScoped<AnhBiaHelper>();
+builder.Services.AddScoped<ThongBaoService>();
 builder.Services.AddDbContext<ApplicationDbContext>(
     options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );

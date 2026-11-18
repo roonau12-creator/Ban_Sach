@@ -6,6 +6,10 @@
     var chuDes = Db.ChuDes.OrderBy(x => x.TenChuDe).ToList();
     var soGio = GioHang.SoLuong();
     var daDangNhap = Context.Session.GetInt32(SessionKeys.MaTK) != null;
+    var maTK = Context.Session.GetInt32(SessionKeys.MaTK);
+    var soThongBaoChuaDoc = maTK == null
+        ? 0
+        : Db.ThongBaos.Count(x => x.MaTK == maTK && !x.An && !x.DaDoc);
     var hoTen = Context.Session.GetString(SessionKeys.HoTen) ?? Context.Session.GetString(SessionKeys.TenDangNhap);
     var vaiTro = Context.Session.GetString(SessionKeys.VaiTro);
 }
@@ -72,6 +76,15 @@
                         </li>
                         @if (daDangNhap)
                         {
+                            <li class="nav-item me-2">
+                                <a class="nav-link position-relative" asp-area="Customer" asp-controller="ThongBao" asp-action="Index">
+                                    <i class="bi bi-bell"></i> Thông báo
+                                    @if (soThongBaoChuaDoc > 0)
+                                    {
+                                        <span class="badge bg-danger rounded-pill cart-badge">@soThongBaoChuaDoc</span>
+                                    }
+                                </a>
+                            </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                                     <i class="bi bi-person-circle"></i> @hoTen

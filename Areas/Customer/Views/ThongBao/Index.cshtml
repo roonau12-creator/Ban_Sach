@@ -1,0 +1,70 @@
+@model IEnumerable<BanSach.Models.ThongBao>
+@{
+    ViewData["Title"] = "Thông báo";
+    var vaiTro = Context.Session.GetString(SessionKeys.VaiTro);
+    var areaDonHang = vaiTro == VaiTroNguoiDung.Admin ? "Admin" : "Customer";
+    var actionDonHang = vaiTro == VaiTroNguoiDung.Admin ? "Details" : "ChiTiet";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold mb-0">Thông báo</h3>
+    @if (Model.Any(x => !x.DaDoc))
+    {
+        <form asp-action="DanhDauTatCaDaDoc" method="post">
+            @Html.AntiForgeryToken()
+            <button class="btn btn-outline-primary btn-sm">Đánh dấu tất cả đã đọc</button>
+        </form>
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <p class="text-muted">Bạn chưa có thông báo nào.</p>
+}
+else
+{
+    <div class="list-group">
+        @foreach (var thongBao in Model)
+        {
+            <div class="list-group-item @(thongBao.DaDoc ? "" : "list-group-item-light border-primary")">
+                <div class="d-flex justify-content-between gap-3">
+                    <div>
+                        <div class="fw-bold">
+                            @thongBao.TieuDe
+                            @if (!thongBao.DaDoc)
+                            {
+                                <span class="badge bg-primary">Mới</span>
+                            }
+                        </div>
+                        <p class="mb-1">@thongBao.NoiDung</p>
+                        <small class="text-muted">@thongBao.NgayTao.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small>
+                        @if (thongBao.MaDH.HasValue)
+                        {
+                            <div>
+                                <a asp-area="@areaDonHang"
+                                   asp-controller="DonHang"
+                                   asp-action="@actionDonHang"
+                                   asp-route-id="@thongBao.MaDH">Xem đơn hàng #@thongBao.MaDH</a>
+                            </div>
+                        }
+                    </div>
+                    <div class="d-flex align-items-start gap-2">
+                        @if (!thongBao.DaDoc)
+                        {
+                            <form asp-action="DanhDauDaDoc" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@thongBao.MaTB" />
+                                <button class="btn btn-outline-primary btn-sm">Đã đọc</button>
+                            </form>
+                        }
+                        <form asp-action="An" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@thongBao.MaTB" />
+                            <button class="btn btn-outline-secondary btn-sm">Ẩn</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

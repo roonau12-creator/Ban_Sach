@@ -22,6 +22,7 @@ namespace BanSach.Data
         public DbSet<DonHang> DonHangs { get; set; }
         public DbSet<ChiTietDonHang> ChiTietDonHangs { get; set; }
         public DbSet<GiaoHang> GiaoHangs { get; set; }
+        public DbSet<ThongBao> ThongBaos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -102,6 +103,25 @@ namespace BanSach.Data
                 .HasOne(x => x.SoDienThoai)
                 .WithMany()
                 .HasForeignKey(x => x.MaSDT)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<ThongBao>()
+                .HasIndex(x => new { x.MaTK, x.MaSuKien })
+                .IsUnique();
+
+            modelBuilder.Entity<ThongBao>()
+                .HasIndex(x => new { x.MaTK, x.An, x.DaDoc });
+
+            modelBuilder.Entity<ThongBao>()
+                .HasOne(x => x.TaiKhoan)
+                .WithMany(x => x.ThongBaos)
+                .HasForeignKey(x => x.MaTK)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ThongBao>()
+                .HasOne(x => x.DonHang)
+                .WithMany(x => x.ThongBaos)
+                .HasForeignKey(x => x.MaDH)
                 .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<ChiTietDonHang>()

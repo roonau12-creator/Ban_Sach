@@ -10,6 +10,7 @@ namespace BanSach.Tests.Helpers
         [InlineData(TrangThaiDonHang.DangGiao, "Đang giao")]
         [InlineData(TrangThaiDonHang.DaGiao, "Đã giao")]
         [InlineData(TrangThaiDonHang.DaHuy, "Đã hủy")]
+        [InlineData(TrangThaiDonHang.GiaoThatBai, "Giao thất bại")]
         public void TrangThaiDon_GiaTriHopLe_TraVeNhanTiengViet(string value, string expected)
         {
             Assert.Equal(expected, HienThi.TrangThaiDon(value));
@@ -37,6 +38,7 @@ namespace BanSach.Tests.Helpers
         [InlineData(TrangThaiDonHang.ChoXacNhan, "bg-warning text-dark")]
         [InlineData(TrangThaiDonHang.DaGiao, "bg-success")]
         [InlineData(TrangThaiDonHang.DaHuy, "bg-secondary")]
+        [InlineData(TrangThaiDonHang.GiaoThatBai, "bg-danger")]
         public void BadgeTrangThaiDon_GiaTriHopLe_TraVeCssDung(string value, string expected)
         {
             Assert.Equal(expected, HienThi.BadgeTrangThaiDon(value));
@@ -68,6 +70,7 @@ namespace BanSach.Tests.Helpers
         [InlineData(TrangThaiGiaoHang.ChoGiao, "Chờ giao")]
         [InlineData(TrangThaiGiaoHang.DangGiao, "Đang giao")]
         [InlineData(TrangThaiGiaoHang.DaGiao, "Đã giao")]
+        [InlineData(TrangThaiGiaoHang.ThatBai, "Giao thất bại")]
         public void GiaoHang_GiaTriHopLe_TraVeNhan(string value, string expected)
         {
             Assert.Equal(expected, HienThi.GiaoHang(value));
