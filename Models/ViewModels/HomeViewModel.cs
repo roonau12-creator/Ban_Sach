@@ -4,6 +4,7 @@ namespace BanSach.Models.ViewModels
     {
         public List<Sach> SachMois { get; set; } = new();
         public List<Sach> SachNoiBats { get; set; } = new();
+        public List<SachBanChayItem> SachBanChays { get; set; } = new();
         public List<ChuDe> ChuDes { get; set; } = new();
         public string? TuKhoa { get; set; }
     }
@@ -22,6 +23,8 @@ namespace BanSach.Models.ViewModels
     {
         public int MaSach { get; set; }
         public string TenSach { get; set; } = string.Empty;
+        public string? AnhBia { get; set; }
+        public decimal GiaBan { get; set; }
         public int SoLuongBan { get; set; }
         public decimal DoanhThu { get; set; }
     }

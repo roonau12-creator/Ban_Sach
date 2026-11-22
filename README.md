@@ -105,7 +105,7 @@ BanSach/
 │       │   ├── DiaChiController.cs
 │       │   └── SoDienThoaiController.cs
 │       └── Views/
-│           ├── Home/         (Index, Privacy)
+│           ├── Home/         (Index: sách mới, nổi bật, bán chạy; Privacy)
 │           ├── Sach/
 │           ├── GioHang/
 │           ├── DonHang/
