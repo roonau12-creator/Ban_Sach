@@ -1,0 +1,58 @@
+@model BanSach.Models.ViewModels.NhapChuDeExcelViewModel
+@{
+    ViewData["Title"] = "Nhập chủ đề từ Excel";
+}
+<div class="card shadow-sm">
+    <div class="card-header bg-success text-white">
+        <h4 class="mb-0"><i class="bi bi-file-earmark-excel"></i> Nhập chủ đề từ Excel</h4>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-light border">
+            <h6 class="fw-bold">Hướng dẫn</h6>
+            <ol class="mb-2">
+                <li>Tải file mẫu, nhập mỗi chủ đề trên một dòng ở cột <strong>Tên chủ đề</strong> (xóa dòng ví dụ).</li>
+                <li>Tên chủ đề tối đa 100 ký tự. Dòng trống sẽ được bỏ qua.</li>
+                <li>Chủ đề trùng tên (không phân biệt hoa thường, dấu) với chủ đề đã có hoặc lặp lại trong file sẽ được bỏ qua nếu chọn ô bên dưới.</li>
+                <li>Nếu có dòng lỗi, hệ thống sẽ <strong>không nhập dòng nào</strong> — sửa lỗi rồi tải lên lại.</li>
+            </ol>
+            <a asp-action="TaiFileMau" class="btn btn-outline-success btn-sm">
+                <i class="bi bi-download"></i> Tải file mẫu
+            </a>
+        </div>
+
+        @if (Model.Loi.Any())
+        {
+            <div class="alert alert-danger">
+                <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle"></i> Chưa nhập chủ đề nào vì file có @Model.Loi.Count lỗi:</div>
+                <ul class="mb-0" style="max-height:300px;overflow:auto">
+                    @foreach (var loi in Model.Loi)
+                    {
+                        <li>@loi</li>
+                    }
+                </ul>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(Model.ThongBao))
+        {
+            <div class="alert alert-info"><i class="bi bi-info-circle"></i> @Model.ThongBao</div>
+        }
+
+        <form asp-action="NhapExcel" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label asp-for="File" class="form-label fw-semibold"></label>
+                <input asp-for="File" type="file" class="form-control"
+                       accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+                <span asp-validation-for="File" class="text-danger"></span>
+            </div>
+            <div class="form-check mb-4">
+                <input asp-for="BoQuaTrung" class="form-check-input" />
+                <label asp-for="BoQuaTrung" class="form-check-label"></label>
+            </div>
+            <div class="d-flex justify-content-between">
+                <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                <button class="btn btn-success"><i class="bi bi-upload"></i> Nhập chủ đề</button>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts { @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); } }

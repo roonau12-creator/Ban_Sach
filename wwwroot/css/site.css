@@ -47,9 +47,30 @@ a {
 }
 
 .store-navbar .navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-weight: 700;
+  font-size: 1.4rem;
   letter-spacing: .04em;
   color: var(--wine) !important;
+}
+
+.brand-logo {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 3px 6px rgba(139, 58, 42, .25));
+}
+
+.brand-accent {
+  color: var(--gold);
+}
+
+.login-logo-img {
+  width: 80px;
+  height: 80px;
+  filter: drop-shadow(0 6px 14px rgba(139, 58, 42, .3));
 }
 
 .store-search {
@@ -93,6 +114,78 @@ a {
   background: #efe4d4;
   color: var(--muted);
   font-size: 42px;
+}
+
+/* Thẻ sách: ảnh bìa luôn khớp khung tỉ lệ 2:3 */
+.book-cover-wrapper {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  background: #efe4d4;
+}
+
+.book-cover-wrapper .book-cover {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform .3s ease;
+}
+
+.book-card:hover .book-cover-wrapper .book-cover {
+  transform: scale(1.05);
+}
+
+.book-cover-wrapper .book-cover-placeholder {
+  height: 100%;
+}
+
+.book-cover-wrapper .hover-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(44, 24, 16, .55);
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+
+.book-card:hover .hover-overlay {
+  opacity: 1;
+}
+
+.book-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.add-to-cart {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Ảnh bìa trang chi tiết sách: khung giống thẻ sách */
+.book-detail-cover {
+  max-width: 360px;
+  margin: 0 auto;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .book-detail-cover {
+    position: sticky;
+    top: 20px;
+  }
 }
 
 .price {
@@ -179,4 +272,76 @@ a {
   .admin-shell {
     flex-direction: column;
   }
+}
+
+/* Trang đăng nhập */
+.login-card {
+  max-width: 440px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.login-logo-link {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.login-logo-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--wine);
+  color: #fff;
+  font-size: 2.2rem;
+  box-shadow: 0 6px 18px rgba(139, 58, 42, .25);
+}
+
+.login-logo-text {
+  font-family: "Source Serif 4", serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  color: var(--wine);
+}
+
+.login-subtitle {
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.login-card .input-group-text {
+  background: var(--paper);
+  border-color: var(--line);
+  color: var(--muted);
+}
+
+.login-card .form-control:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 .2rem rgba(196, 165, 116, .25);
+}
+
+.btn-login {
+  background: var(--wine);
+  border-color: var(--wine);
+  color: #fff;
+  font-weight: 600;
+  padding: 10px;
+}
+
+.btn-login:hover,
+.btn-login:focus {
+  background: var(--wine-dark);
+  border-color: var(--wine-dark);
+  color: #fff;
+}
+
+.login-card .validation-summary-valid {
+  display: none;
 }

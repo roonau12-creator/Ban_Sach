@@ -18,13 +18,23 @@
             </p>
         </div>
 
-        <a asp-area="Admin"
-           asp-controller="ChuDe"
-           asp-action="Create"
-           class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i>
-            Thêm chủ đề
-        </a>
+        <div class="d-flex gap-2">
+            <a asp-area="Admin"
+               asp-controller="ChuDe"
+               asp-action="NhapExcel"
+               class="btn btn-success">
+                <i class="bi bi-file-earmark-excel"></i>
+                Nhập từ Excel
+            </a>
+
+            <a asp-area="Admin"
+               asp-controller="ChuDe"
+               asp-action="Create"
+               class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i>
+                Thêm chủ đề
+            </a>
+        </div>
     </div>
 
     <form method="get" class="row g-2 mb-3">

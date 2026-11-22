@@ -4,14 +4,19 @@
 }
 <div class="row g-4">
     <div class="col-md-4">
-        @if (!string.IsNullOrEmpty(Model.AnhBia))
-        {
-            <img src="@Model.AnhBia" class="img-fluid rounded shadow-sm" alt="@Model.TenSach" />
-        }
-        else
-        {
-            <div class="book-cover-placeholder rounded"><i class="bi bi-book"></i></div>
-        }
+        <!-- Ảnh bìa: cùng khung tỉ lệ 2:3 với thẻ sách -->
+        <div class="book-detail-cover shadow-sm">
+            <div class="book-cover-wrapper">
+                @if (!string.IsNullOrEmpty(Model.AnhBia))
+                {
+                    <img src="@Model.AnhBia" class="book-cover" alt="@Model.TenSach" />
+                }
+                else
+                {
+                    <div class="book-cover-placeholder"><i class="bi bi-book"></i></div>
+                }
+            </div>
+        </div>
     </div>
     <div class="col-md-8">
         <h1 class="fw-bold">@Model.TenSach</h1>

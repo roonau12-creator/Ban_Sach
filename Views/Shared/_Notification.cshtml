@@ -1,0 +1,41 @@
+@using System.Text.Json
+@*
+    Hiển thị thông báo toastr từ TempData.
+    Dùng trong controller: TempData["success"] / ["error"] / ["warning"] / ["info"] = "Nội dung";
+    Phải đặt SAU thẻ <script> jQuery.
+*@
+@{
+    var loaiThongBao = new (string Key, string TieuDe)[]
+    {
+        ("success", "Thành công"),
+        ("error", "Lỗi"),
+        ("warning", "Cảnh báo"),
+        ("info", "Thông báo")
+    };
+    var thongBaos = loaiThongBao
+        .Select(x => new { x.Key, x.TieuDe, NoiDung = TempData[x.Key]?.ToString() })
+        .Where(x => !string.IsNullOrWhiteSpace(x.NoiDung))
+        .ToList();
+}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
+<script>
+    toastr.options = {
+        closeButton: true,
+        progressBar: true,
+        newestOnTop: true,
+        positionClass: 'toast-top-right',
+        preventDuplicates: true,
+        escapeHtml: true,
+        timeOut: 4000,
+        extendedTimeOut: 2000,
+        showMethod: 'fadeIn',
+        hideMethod: 'fadeOut'
+    };
+    @foreach (var tb in thongBaos)
+    {
+        // Thông báo dài (vd: link đặt lại mật khẩu) giữ lại cho tới khi người dùng đóng
+        var giuLai = tb.NoiDung!.Length > 120 ? "{ timeOut: 0, extendedTimeOut: 0 }" : "{}";
+        @:toastr[@Html.Raw(JsonSerializer.Serialize(tb.Key))](@Html.Raw(JsonSerializer.Serialize(tb.NoiDung)), @Html.Raw(JsonSerializer.Serialize(tb.TieuDe)), @Html.Raw(giuLai));
+    }
+</script>

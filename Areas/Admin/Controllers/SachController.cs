@@ -180,6 +180,125 @@ namespace BanSach.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        public async Task<IActionResult> TaiFileMau()
+        {
+            var bytes = SachExcelHelper.TaoFileMau(
+                await _context.ChuDes.OrderBy(x => x.TenChuDe).Select(x => x.TenChuDe).ToListAsync(),
+                await _context.NhomSachs.OrderBy(x => x.ThuTu).Select(x => x.TenNhom).ToListAsync(),
+                await _context.NhaXuatBans.OrderBy(x => x.TenNXB).Select(x => x.TenNXB).ToListAsync(),
+                await _context.TacGias.OrderBy(x => x.TenTacGia).Select(x => x.TenTacGia).ToListAsync());
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "mau-nhap-sach.xlsx");
+        }
+
+        public IActionResult NhapExcel() => View(new NhapSachExcelViewModel());
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [RequestSizeLimit(10 * 1024 * 1024)]
+        public async Task<IActionResult> NhapExcel(NhapSachExcelViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            if (!Path.GetExtension(model.File!.FileName).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
+            {
+                ModelState.AddModelError(nameof(model.File), "Chỉ hỗ trợ file .xlsx.");
+                return View(model);
+            }
+
+            KetQuaDocExcel ketQua;
+            await using (var stream = new MemoryStream())
+            {
+                await model.File.CopyToAsync(stream);
+                stream.Position = 0;
+                ketQua = SachExcelHelper.DocFile(stream);
+            }
+            model.Loi.AddRange(ketQua.Loi);
+
+            // Danh mục hiện có, khóa theo tên đã chuẩn hóa (bỏ dấu, chữ thường)
+            static string K(string s) => SachExcelHelper.ChuanHoa(s);
+            var chuDes = (await _context.ChuDes.ToListAsync()).GroupBy(x => K(x.TenChuDe)).ToDictionary(g => g.Key, g => g.First());
+            var nhoms = (await _context.NhomSachs.ToListAsync()).GroupBy(x => K(x.TenNhom)).ToDictionary(g => g.Key, g => g.First());
+            var nxbs = (await _context.NhaXuatBans.ToListAsync()).GroupBy(x => K(x.TenNXB)).ToDictionary(g => g.Key, g => g.First());
+            var tacGias = (await _context.TacGias.ToListAsync()).GroupBy(x => K(x.TenTacGia)).ToDictionary(g => g.Key, g => g.First());
+            var tenSachDaCo = (await _context.Sachs.Select(x => x.TenSach).ToListAsync()).Select(K).ToHashSet();
+            var thuTuNhom = nhoms.Count == 0 ? 0 : nhoms.Values.Max(x => x.ThuTu);
+
+            T? TimHoacTao<T>(Dictionary<string, T> dict, string ten, int maxLen, string loai, int dong, Func<T> tao) where T : class
+            {
+                if (dict.TryGetValue(K(ten), out var e)) return e;
+                if (ten.Length > maxLen)
+                {
+                    model.Loi.Add($"Dòng {dong}: tên {loai} \"{ten}\" dài quá {maxLen} ký tự.");
+                    return null;
+                }
+                if (!model.TuTaoDanhMuc)
+                {
+                    model.Loi.Add($"Dòng {dong}: {loai} \"{ten}\" chưa có trong hệ thống.");
+                    return null;
+                }
+                e = tao();
+                dict[K(ten)] = e;
+                return e;
+            }
+
+            var sachMois = new List<Sach>();
+            var boQua = new List<string>();
+            foreach (var d in ketQua.Dongs)
+            {
+                if (tenSachDaCo.Contains(K(d.TenSach)))
+                {
+                    if (model.BoQuaTrung)
+                    {
+                        boQua.Add(d.TenSach);
+                        continue;
+                    }
+                    model.Loi.Add($"Dòng {d.Dong}: sách \"{d.TenSach}\" đã tồn tại.");
+                    continue;
+                }
+
+                var cd = TimHoacTao(chuDes, d.ChuDe, 100, "chủ đề", d.Dong, () => new ChuDe { TenChuDe = d.ChuDe });
+                var nhom = TimHoacTao(nhoms, d.NhomSach, 100, "nhóm sách", d.Dong, () => new NhomSach { TenNhom = d.NhomSach, ThuTu = ++thuTuNhom });
+                var nxb = TimHoacTao(nxbs, d.NhaXuatBan, 200, "nhà xuất bản", d.Dong, () => new NhaXuatBan { TenNXB = d.NhaXuatBan });
+                var tgs = d.TacGias.Select(t => TimHoacTao(tacGias, t, 150, "tác giả", d.Dong, () => new TacGia { TenTacGia = t })).ToList();
+                if (cd == null || nhom == null || nxb == null || tgs.Any(t => t == null)) continue;
+
+                var sach = new Sach
+                {
+                    TenSach = d.TenSach,
+                    ChuDe = cd,
+                    NhomSach = nhom,
+                    NhaXuatBan = nxb,
+                    GiaBan = d.GiaBan,
+                    SoLuongTon = d.SoLuongTon,
+                    NamXB = d.NamXB,
+                    MoTa = d.MoTa,
+                    SachMoi = d.SachMoi,
+                    NoiBat = d.NoiBat,
+                    AnhBia = d.AnhBia
+                };
+                foreach (var tg in tgs.Distinct()) sach.SachTacGias.Add(new SachTacGia { TacGia = tg });
+
+                tenSachDaCo.Add(K(d.TenSach)); // chặn trùng trong chính file
+                sachMois.Add(sach);
+            }
+
+            // Có lỗi thì không nhập gì cả để tránh nhập nửa chừng
+            if (model.Loi.Count > 0) return View(model);
+
+            if (sachMois.Count == 0)
+            {
+                model.Loi.Add("Không có sách mới nào để nhập" + (boQua.Count > 0 ? $" ({boQua.Count} sách trùng đã bỏ qua)." : "."));
+                return View(model);
+            }
+
+            _context.Sachs.AddRange(sachMois);
+            await _context.SaveChangesAsync();
+
+            TempData["success"] = $"Đã nhập {sachMois.Count} sách từ Excel."
+                + (boQua.Count > 0 ? $" Bỏ qua {boQua.Count} sách trùng tên: {string.Join(", ", boQua.Take(5))}{(boQua.Count > 5 ? "..." : "")}." : "");
+            return RedirectToAction(nameof(Index));
+        }
+
         private async Task<SachFormViewModel> TaoForm(Sach? sach = null)
         {
             var model = sach == null

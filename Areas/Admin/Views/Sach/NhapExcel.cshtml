@@ -1,0 +1,59 @@
+@model BanSach.Models.ViewModels.NhapSachExcelViewModel
+@{
+    ViewData["Title"] = "Nhập sách từ Excel";
+}
+<div class="card shadow-sm">
+    <div class="card-header bg-success text-white">
+        <h4 class="mb-0"><i class="bi bi-file-earmark-excel"></i> Nhập sách từ Excel</h4>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-light border">
+            <h6 class="fw-bold">Hướng dẫn</h6>
+            <ol class="mb-2">
+                <li>Tải file mẫu, nhập mỗi cuốn sách trên một dòng (xóa dòng ví dụ).</li>
+                <li>Cột bắt buộc: <strong>Tên sách, Chủ đề, Nhóm sách, Nhà xuất bản, Giá bán</strong>.</li>
+                <li>Nhiều tác giả cách nhau bằng dấu phẩy. Sách mới / Nổi bật ghi <em>Có</em> hoặc <em>Không</em>.</li>
+                <li>Nếu có dòng lỗi, hệ thống sẽ <strong>không nhập dòng nào</strong> — sửa lỗi rồi tải lên lại.</li>
+            </ol>
+            <a asp-action="TaiFileMau" class="btn btn-outline-success btn-sm">
+                <i class="bi bi-download"></i> Tải file mẫu
+            </a>
+        </div>
+
+        @if (Model.Loi.Any())
+        {
+            <div class="alert alert-danger">
+                <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle"></i> Chưa nhập sách nào vì file có @Model.Loi.Count lỗi:</div>
+                <ul class="mb-0" style="max-height:300px;overflow:auto">
+                    @foreach (var loi in Model.Loi)
+                    {
+                        <li>@loi</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <form asp-action="NhapExcel" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div class="mb-3">
+                <label asp-for="File" class="form-label fw-semibold"></label>
+                <input asp-for="File" type="file" class="form-control"
+                       accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+                <span asp-validation-for="File" class="text-danger"></span>
+            </div>
+            <div class="form-check mb-2">
+                <input asp-for="TuTaoDanhMuc" class="form-check-input" />
+                <label asp-for="TuTaoDanhMuc" class="form-check-label"></label>
+            </div>
+            <div class="form-check mb-4">
+                <input asp-for="BoQuaTrung" class="form-check-input" />
+                <label asp-for="BoQuaTrung" class="form-check-label"></label>
+            </div>
+            <div class="d-flex justify-content-between">
+                <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                <button class="btn btn-success"><i class="bi bi-upload"></i> Nhập sách</button>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts { @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); } }

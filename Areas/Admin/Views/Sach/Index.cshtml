@@ -4,7 +4,10 @@
 }
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold"><i class="bi bi-journal"></i> Quản lý sách</h2>
-    <a asp-action="Create" class="btn btn-primary">Thêm sách</a>
+    <div class="d-flex gap-2">
+        <a asp-action="NhapExcel" class="btn btn-success"><i class="bi bi-file-earmark-excel"></i> Nhập từ Excel</a>
+        <a asp-action="Create" class="btn btn-primary">Thêm sách</a>
+    </div>
 </div>
 <form method="get" class="row g-2 mb-3">
     <div class="col-md-3"><input name="q" value="@ViewBag.TuKhoa" class="form-control" placeholder="Tìm sách..." /></div>
@@ -15,17 +18,17 @@
 </form>
 <div class="card shadow-sm">
     <div class="card-body table-responsive">
-        <table class="table table-hover align-middle">
+        <table id="bangSach" class="table table-hover align-middle w-100">
             <thead>
                 <tr>
-                    <th>Ảnh</th>
+                    <th class="no-sort">Ảnh</th>
                     <th>Tên sách</th>
                     <th>Chủ đề</th>
                     <th>Nhóm</th>
                     <th>NXB</th>
                     <th>Giá</th>
                     <th>Tồn</th>
-                    <th></th>
+                    <th class="no-sort text-end">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -46,9 +49,9 @@
                     <td>@item.ChuDe?.TenChuDe</td>
                     <td>@item.NhomSach?.TenNhom</td>
                     <td>@item.NhaXuatBan?.TenNXB</td>
-                    <td>@HienThi.Tien(item.GiaBan)</td>
+                    <td data-order="@item.GiaBan.ToString(System.Globalization.CultureInfo.InvariantCulture)">@HienThi.Tien(item.GiaBan)</td>
                     <td>@item.SoLuongTon</td>
-                    <td class="text-end">
+                    <td class="text-end text-nowrap">
                         <a asp-action="Details" asp-route-id="@item.MaSach" class="btn btn-info btn-sm text-white">Xem</a>
                         <a asp-action="Edit" asp-route-id="@item.MaSach" class="btn btn-warning btn-sm">Sửa</a>
                         <a asp-action="Delete" asp-route-id="@item.MaSach" class="btn btn-danger btn-sm">Xóa</a>
@@ -59,3 +62,34 @@
         </table>
     </div>
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.bootstrap5.min.css" />
+}
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(function () {
+            $('#bangSach').DataTable({
+                order: [],
+                pageLength: 10,
+                lengthMenu: [10, 25, 50, 100],
+                columnDefs: [
+                    { targets: 'no-sort', orderable: false, searchable: false }
+                ],
+                language: {
+                    search: 'Tìm nhanh:',
+                    lengthMenu: 'Hiển thị _MENU_ sách',
+                    info: 'Hiển thị _START_ - _END_ / _TOTAL_ sách',
+                    infoEmpty: 'Không có sách nào',
+                    infoFiltered: '(lọc từ _MAX_ sách)',
+                    zeroRecords: 'Không tìm thấy sách phù hợp',
+                    emptyTable: 'Chưa có sách nào',
+                    paginate: { first: '«', last: '»', next: '›', previous: '‹' }
+                }
+            });
+        });
+    </script>
+}
