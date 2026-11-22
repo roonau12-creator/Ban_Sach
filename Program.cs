@@ -6,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -15,6 +16,7 @@ builder.Services.AddSession(options =>
 });
 builder.Services.AddScoped<SessionGioHang>();
 builder.Services.AddScoped<AnhBiaHelper>();
+builder.Services.AddScoped<SachExcelService>();
 builder.Services.AddDbContext<ApplicationDbContext>(
     options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
