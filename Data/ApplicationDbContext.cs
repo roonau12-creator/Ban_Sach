@@ -27,7 +27,6 @@ namespace BanSach.Data
         {
             base.OnModelCreating(modelBuilder);
 
-<<<<<<< HEAD
             modelBuilder.Entity<TaiKhoan>()
                 .HasIndex(x => x.TenDangNhap)
                 .IsUnique();
