@@ -8,7 +8,6 @@ namespace BanSach.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
-
         public DbSet<ChuDe> ChuDes { get; set; }
         public DbSet<NhomSach> NhomSachs { get; set; }
         public DbSet<NhaXuatBan> NhaXuatBans { get; set; }
@@ -22,11 +21,13 @@ namespace BanSach.Data
         public DbSet<DonHang> DonHangs { get; set; }
         public DbSet<ChiTietDonHang> ChiTietDonHangs { get; set; }
         public DbSet<GiaoHang> GiaoHangs { get; set; }
+        public DbSet<ApplicationUser> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+<<<<<<< HEAD
             modelBuilder.Entity<TaiKhoan>()
                 .HasIndex(x => x.TenDangNhap)
                 .IsUnique();
@@ -121,6 +122,10 @@ namespace BanSach.Data
                 .WithOne(x => x.GiaoHang)
                 .HasForeignKey<GiaoHang>(x => x.MaDH)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ApplicationUser>()
+                .HasIndex(user => user.NormalizedEmail)
+                .IsUnique();
         }
     }
 }
