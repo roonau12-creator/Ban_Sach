@@ -9,6 +9,8 @@
             <div class="card-body">
                 <form asp-action="DatHang" method="post">
                     @Html.AntiForgeryToken()
+                    <input asp-for="MaYeuCau" type="hidden" />
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
                     <div class="mb-3">
                         <label asp-for="MaDC" class="form-label fw-bold"></label>
                         <select asp-for="MaDC" class="form-select" asp-items="Model.DiaChis"></select>

@@ -6,6 +6,7 @@ using BanSach.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace BanSach.Areas.Customer.Controllers
 {
@@ -41,10 +42,10 @@ namespace BanSach.Areas.Customer.Controllers
                 TempData["error"] = "Giỏ hàng đã được cập nhật theo giá và tồn kho hiện tại. Vui lòng kiểm tra lại.";
             }
 
-            var items = _gioHang.LayGio();
-            if (!items.Any())
+            var (items, error) = await LayGioHangXacNhanAsync();
+            if (error != null)
             {
-                TempData["error"] = "Giỏ hàng trống.";
+                TempData["error"] = error;
                 return RedirectToAction("Index", "GioHang");
             }
 
@@ -56,17 +57,7 @@ namespace BanSach.Areas.Customer.Controllers
                 return RedirectToAction("Index", !diaChis.Any() ? "DiaChi" : "SoDienThoai");
             }
 
-            var model = new DatHangViewModel
-            {
-                Items = items,
-                TongHang = items.Sum(x => x.ThanhTien),
-                TongTien = items.Sum(x => x.ThanhTien),
-                MaDC = diaChis.FirstOrDefault(x => x.MacDinh)?.MaDC ?? diaChis[0].MaDC,
-                MaSDT = sdts.FirstOrDefault(x => x.MacDinh)?.MaSDT ?? sdts[0].MaSDT,
-                DiaChis = new SelectList(diaChis, "MaDC", "DiaChiChiTiet"),
-                SoDienThoais = new SelectList(sdts, "MaSDT", "SoDT")
-            };
-            return View(model);
+            return View(TaoDatHangViewModel(items, diaChis, sdts));
         }
 
         [HttpPost]
@@ -76,16 +67,35 @@ namespace BanSach.Areas.Customer.Controllers
             var maKH = HttpContext.Session.GetInt32(SessionKeys.MaKH);
             if (maKH == null) return RedirectToAction("DangNhap", "TaiKhoan");
 
+            if (model.MaYeuCau == Guid.Empty)
+            {
+                ModelState.AddModelError(nameof(model.MaYeuCau), "Yêu cầu đặt hàng không hợp lệ. Vui lòng tải lại trang.");
+            }
+            else
+            {
+                var previousOrderId = await _context.DonHangs
+                    .AsNoTracking()
+                    .Where(x => x.MaYeuCau == model.MaYeuCau)
+                    .Select(x => new { x.MaDH, x.MaKH })
+                    .FirstOrDefaultAsync();
+                if (previousOrderId != null)
+                {
+                    if (previousOrderId.MaKH != maKH.Value) return BadRequest();
+                    _gioHang.XoaGio();
+                    return RedirectToAction(nameof(ChiTiet), new { id = previousOrderId.MaDH });
+                }
+            }
+
             if (await _gioHangService.DongBoAsync())
             {
                 TempData["error"] = "Giá hoặc tồn kho đã thay đổi. Vui lòng kiểm tra lại giỏ hàng trước khi đặt.";
                 return RedirectToAction("Index", "GioHang");
             }
 
-            var items = _gioHang.LayGio();
-            if (!items.Any())
+            var (items, error) = await LayGioHangXacNhanAsync();
+            if (error != null)
             {
-                TempData["error"] = "Giỏ hàng trống.";
+                TempData["error"] = error;
                 return RedirectToAction("Index", "GioHang");
             }
 
@@ -120,12 +130,17 @@ namespace BanSach.Areas.Customer.Controllers
                 return View(model);
             }
 
-            var diaChi = await _context.DiaChis.FirstOrDefaultAsync(x => x.MaDC == model.MaDC && x.MaKH == maKH);
-            var sdt = await _context.SoDienThoais.FirstOrDefaultAsync(x => x.MaSDT == model.MaSDT && x.MaKH == maKH);
-            if (diaChi == null || sdt == null)
+            if (!diaChis.Any(x => x.MaDC == model.MaDC))
+                ModelState.AddModelError(nameof(model.MaDC), "Địa chỉ giao hàng không hợp lệ.");
+            if (!sdts.Any(x => x.MaSDT == model.MaSDT))
+                ModelState.AddModelError(nameof(model.MaSDT), "Số điện thoại không hợp lệ.");
+            if (model.PhuongThucThanhToan != PhuongThucThanhToan.COD
+                && model.PhuongThucThanhToan != PhuongThucThanhToan.ChuyenKhoan)
+                ModelState.AddModelError(nameof(model.PhuongThucThanhToan), "Phương thức thanh toán không hợp lệ.");
+
+            if (!ModelState.IsValid)
             {
-                TempData["error"] = "Địa chỉ hoặc số điện thoại không hợp lệ.";
-                return RedirectToAction(nameof(DatHang));
+                return View(TaoDatHangViewModel(items, diaChis, sdts, model));
             }
 
             var (maKhuyenMai, loiKhuyenMai, soTienGiam) =
@@ -136,81 +151,58 @@ namespace BanSach.Areas.Customer.Controllers
                 return View(model);
             }
 
+            var diaChi = diaChis.First(x => x.MaDC == model.MaDC);
+            var sdt = sdts.First(x => x.MaSDT == model.MaSDT);
             await using var tx = await _context.Database.BeginTransactionAsync();
             try
             {
-                var maSachs = items.Select(x => x.MaSach).Distinct().ToList();
-                var sachs = await _context.Sachs
-                    .Include(x => x.NhomSach)
-                    .Where(x => maSachs.Contains(x.MaSach))
-                    .ToDictionaryAsync(x => x.MaSach);
-                var gioDaThayDoi = false;
-
-                foreach (var item in items)
-                {
-                    if (!sachs.TryGetValue(item.MaSach, out var sach)
-                        || !GioHangService.CoTheBan(item, sach))
-                    {
-                        await tx.RollbackAsync();
-                        await _gioHangService.DongBoAsync();
-                        TempData["error"] = $"Sách \"{item.TenSach}\" hiện không được kinh doanh hoặc đã hết hàng.";
-                        return RedirectToAction("Index", "GioHang");
-                    }
-
-                    var soLuongCu = item.SoLuong;
-                    var giaCu = item.GiaBan;
-                    var tenCu = item.TenSach;
-                    var anhCu = item.AnhBia;
-                    item.SoLuong = Math.Min(item.SoLuong, sach.SoLuongTon);
-                    item.TenSach = sach.TenSach;
-                    item.AnhBia = sach.AnhBia;
-                    item.GiaBan = sach.GiaBan;
-                    gioDaThayDoi |= soLuongCu != item.SoLuong
-                        || giaCu != item.GiaBan
-                        || tenCu != item.TenSach
-                        || anhCu != item.AnhBia;
-                }
-
-                if (gioDaThayDoi)
+                var maSachs = items.Select(x => x.MaSach).OrderBy(x => x).ToArray();
+                var sachTrongKho = await _context.Sachs
+                    .FromSqlInterpolated(
+                        $"SELECT * FROM \"Sachs\" WHERE \"MaSach\" = ANY ({maSachs}) ORDER BY \"MaSach\" FOR UPDATE")
+                    .ToListAsync();
+                var previousOrderId = await _context.DonHangs
+                    .AsNoTracking()
+                    .Where(x => x.MaYeuCau == model.MaYeuCau)
+                    .Select(x => new { x.MaDH, x.MaKH })
+                    .FirstOrDefaultAsync();
+                if (previousOrderId != null)
                 {
                     await tx.RollbackAsync();
-                    _gioHang.LuuGio(items);
-                    TempData["error"] = "Giá hoặc tồn kho đã thay đổi. Vui lòng kiểm tra lại giỏ hàng trước khi đặt.";
+                    if (previousOrderId.MaKH != maKH.Value) return BadRequest();
+                    _gioHang.XoaGio();
+                    return RedirectToAction(nameof(ChiTiet), new { id = previousOrderId.MaDH });
+                }
+
+                if (sachTrongKho.Count != items.Count)
+                {
+                    await tx.RollbackAsync();
+                    TempData["error"] = "Một hoặc nhiều sách trong giỏ hàng không còn tồn tại.";
                     return RedirectToAction("Index", "GioHang");
                 }
 
-                foreach (var item in items)
+                var sachTheoMa = sachTrongKho.ToDictionary(x => x.MaSach);
+                var sachKhongDuTon = items.FirstOrDefault(
+                    x => sachTheoMa[x.MaSach].SoLuongTon < x.SoLuong);
+                if (sachKhongDuTon != null)
                 {
-                    var affected = await _context.Sachs
-                        .Where(x => x.MaSach == item.MaSach
-                            && x.SoLuongTon >= item.SoLuong
-                            && x.GiaBan == sachs[item.MaSach].GiaBan
-                            && x.NhomSach != null
-                            && x.NhomSach.TrangThai)
-                        .ExecuteUpdateAsync(setters => setters
-                            .SetProperty(x => x.SoLuongTon, x => x.SoLuongTon - item.SoLuong));
-
-                    if (affected != 1)
-                    {
-                        await tx.RollbackAsync();
-                        await _gioHangService.DongBoAsync();
-                        TempData["error"] = $"Giá bán hoặc tồn kho của sách \"{item.TenSach}\" vừa thay đổi. Vui lòng kiểm tra lại giỏ hàng.";
-                        return RedirectToAction("Index", "GioHang");
-                    }
+                    await tx.RollbackAsync();
+                    TempData["error"] = $"Sách \"{sachTheoMa[sachKhongDuTon.MaSach].TenSach}\" không đủ số lượng tồn.";
+                    return RedirectToAction("Index", "GioHang");
                 }
 
+                var tongHang = items.Sum(x => sachTheoMa[x.MaSach].GiaBan * x.SoLuong);
                 var don = new DonHang
                 {
                     MaKH = maKH.Value,
                     NgayDat = DateTime.UtcNow,
                     TrangThai = TrangThaiDonHang.ChoXacNhan,
-                    TongTien = model.TongHang - soTienGiam,
+                    MaYeuCau = model.MaYeuCau,
+                    TongTien = tongHang - soTienGiam,
                     SoTienGiam = soTienGiam,
                     MaKM = maKhuyenMai?.MaKM,
                     MaKhuyenMai = maKhuyenMai?.MaCode,
-                    PhuongThucThanhToan = model.PhuongThucThanhToan == PhuongThucThanhToan.ChuyenKhoan
-                        ? PhuongThucThanhToan.ChuyenKhoan
-                        : PhuongThucThanhToan.COD,
+                    PhuongThucThanhToan = model.PhuongThucThanhToan,
                     TrangThaiThanhToan = model.PhuongThucThanhToan == PhuongThucThanhToan.ChuyenKhoan
                         ? TrangThaiThanhToan.DaThanhToan
                         : TrangThaiThanhToan.ChuaThanhToan,
@@ -223,13 +215,18 @@ namespace BanSach.Areas.Customer.Controllers
                     {
                         MaSach = x.MaSach,
                         SoLuong = x.SoLuong,
-                        DonGia = sachs[x.MaSach].GiaBan
+                        DonGia = sachTheoMa[x.MaSach].GiaBan
                     }).ToList(),
                     GiaoHang = new GiaoHang
                     {
                         TrangThai = TrangThaiGiaoHang.ChoGiao
                     }
                 };
+
+                foreach (var item in items)
+                {
+                    sachTheoMa[item.MaSach].SoLuongTon -= item.SoLuong;
+                }
 
                 _context.DonHangs.Add(don);
                 await _context.SaveChangesAsync();
@@ -238,11 +235,19 @@ namespace BanSach.Areas.Customer.Controllers
                 TempData["success"] = "Đặt hàng thành công!";
                 return RedirectToAction(nameof(ChiTiet), new { id = don.MaDH });
             }
-            catch
+            catch (DbUpdateException ex) when (LaTrungYeuCauDatHang(ex))
             {
                 await tx.RollbackAsync();
-                TempData["error"] = "Không thể đặt hàng. Vui lòng thử lại.";
-                return RedirectToAction("Index", "GioHang");
+                _context.ChangeTracker.Clear();
+                var previousOrderId = await _context.DonHangs
+                    .AsNoTracking()
+                    .Where(x => x.MaYeuCau == model.MaYeuCau && x.MaKH == maKH.Value)
+                    .Select(x => (int?)x.MaDH)
+                    .FirstOrDefaultAsync();
+                if (previousOrderId == null) throw;
+
+                _gioHang.XoaGio();
+                return RedirectToAction(nameof(ChiTiet), new { id = previousOrderId });
             }
         }
 
@@ -323,6 +328,81 @@ namespace BanSach.Areas.Customer.Controllers
                 .Include(x => x.GiaoHang)
                 .Include(x => x.ChiTietDonHangs).ThenInclude(x => x.Sach)
                 .FirstOrDefaultAsync(x => x.MaDH == id && x.MaKH == maKH);
+        }
+
+        private async Task<(List<GioHangItem> Items, string? Error)> LayGioHangXacNhanAsync()
+        {
+            var gio = _gioHang.LayGio();
+            if (gio.Count == 0) return (new List<GioHangItem>(), "Giỏ hàng trống.");
+            if (gio.Any(x => x.MaSach <= 0 || x.SoLuong <= 0))
+                return (new List<GioHangItem>(), "Thông tin giỏ hàng không hợp lệ. Vui lòng cập nhật lại giỏ hàng.");
+
+            var soLuongTheoMa = gio
+                .GroupBy(x => x.MaSach)
+                .Select(g => new
+                {
+                    MaSach = g.Key,
+                    SoLuong = g.Sum(x => (long)x.SoLuong)
+                })
+                .ToList();
+            if (soLuongTheoMa.Any(x => x.SoLuong > int.MaxValue))
+                return (new List<GioHangItem>(), "Số lượng sách trong giỏ hàng không hợp lệ.");
+
+            var maSachs = soLuongTheoMa.Select(x => x.MaSach).ToArray();
+            var sachTrongCSDL = await _context.Sachs
+                .AsNoTracking()
+                .Where(x => maSachs.Contains(x.MaSach))
+                .ToDictionaryAsync(x => x.MaSach);
+            if (sachTrongCSDL.Count != soLuongTheoMa.Count)
+                return (new List<GioHangItem>(), "Một hoặc nhiều sách trong giỏ hàng không còn tồn tại.");
+
+            var items = soLuongTheoMa.Select(x =>
+            {
+                var sach = sachTrongCSDL[x.MaSach];
+                return new GioHangItem
+                {
+                    MaSach = sach.MaSach,
+                    TenSach = sach.TenSach,
+                    AnhBia = sach.AnhBia,
+                    GiaBan = sach.GiaBan,
+                    SoLuong = (int)x.SoLuong
+                };
+            }).ToList();
+
+            _gioHang.LuuGio(items);
+            return (items, null);
+        }
+
+        private static DatHangViewModel TaoDatHangViewModel(
+            List<GioHangItem> items,
+            List<DiaChi> diaChis,
+            List<SoDienThoai> sdts,
+            DatHangViewModel? input = null)
+        {
+            return new DatHangViewModel
+            {
+                MaYeuCau = input?.MaYeuCau ?? Guid.NewGuid(),
+                MaDC = input?.MaDC ?? diaChis.FirstOrDefault(x => x.MacDinh)?.MaDC ?? diaChis[0].MaDC,
+                MaSDT = input?.MaSDT ?? sdts.FirstOrDefault(x => x.MacDinh)?.MaSDT ?? sdts[0].MaSDT,
+                PhuongThucThanhToan = input?.PhuongThucThanhToan ?? PhuongThucThanhToan.COD,
+                GhiChu = input?.GhiChu,
+                Items = items,
+                TongHang = items.Sum(x => x.ThanhTien),
+                GiamGia = 0,
+                TongTien = items.Sum(x => x.ThanhTien),
+                MaKhuyenMai = input?.MaKhuyenMai,
+                DiaChis = new SelectList(diaChis, "MaDC", "DiaChiChiTiet", input?.MaDC),
+                SoDienThoais = new SelectList(sdts, "MaSDT", "SoDT", input?.MaSDT)
+            };
+        }
+
+        private static bool LaTrungYeuCauDatHang(DbUpdateException exception)
+        {
+            return exception.InnerException is PostgresException
+            {
+                SqlState: PostgresErrorCodes.UniqueViolation,
+                ConstraintName: "IX_DonHangs_MaYeuCau"
+            };
         }
     }
 }
