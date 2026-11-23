@@ -15,6 +15,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 builder.Services.AddScoped<SessionGioHang>();
+builder.Services.AddScoped<GioHangService>();
 builder.Services.AddScoped<AnhBiaHelper>();
 builder.Services.AddScoped<SachExcelService>();
 builder.Services.AddDbContext<ApplicationDbContext>(
