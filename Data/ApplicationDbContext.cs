@@ -24,6 +24,7 @@ namespace BanSach.Data
         public DbSet<GiaoHang> GiaoHangs { get; set; }
         public DbSet<DanhGia> DanhGias { get; set; }
         public DbSet<KhuyenMai> KhuyenMais { get; set; }
+        public DbSet<EmailOutbox> EmailOutbox { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -125,6 +126,10 @@ namespace BanSach.Data
                 .HasIndex(x => x.MaCode)
                 .IsUnique();
 
+            modelBuilder.Entity<DonHang>()
+                .Property(x => x.TrangThaiVersion)
+                .IsConcurrencyToken();
+
             modelBuilder.Entity<ChiTietDonHang>()
                 .HasOne(x => x.DonHang)
                 .WithMany(x => x.ChiTietDonHangs)
@@ -166,6 +171,13 @@ namespace BanSach.Data
                 .WithMany(x => x.DanhGias)
                 .HasForeignKey(x => x.MaSach)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<EmailOutbox>()
+                .HasIndex(x => x.EventKey)
+                .IsUnique();
+
+            modelBuilder.Entity<EmailOutbox>()
+                .HasIndex(x => new { x.Status, x.NextAttemptAt });
         }
     }
 }

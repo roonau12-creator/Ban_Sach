@@ -3,6 +3,7 @@ using BanSach.Filters;
 using BanSach.Helpers;
 using BanSach.Models;
 using BanSach.Models.ViewModels;
+using BanSach.Services.Email;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -17,15 +18,18 @@ namespace BanSach.Areas.Customer.Controllers
         private readonly ApplicationDbContext _context;
         private readonly SessionGioHang _gioHang;
         private readonly GioHangService _gioHangService;
+        private readonly ILogger<DonHangController> _logger;
 
         public DonHangController(
             ApplicationDbContext context,
             SessionGioHang gioHang,
-            GioHangService gioHangService)
+            GioHangService gioHangService,
+            ILogger<DonHangController> logger)
         {
             _context = context;
             _gioHang = gioHang;
             _gioHangService = gioHangService;
+            _logger = logger;
         }
 
         public async Task<IActionResult> DatHang()
@@ -153,6 +157,15 @@ namespace BanSach.Areas.Customer.Controllers
 
             var diaChi = diaChis.First(x => x.MaDC == model.MaDC);
             var sdt = sdts.First(x => x.MaSDT == model.MaSDT);
+            var khachHang = await _context.KhachHangs
+                .Include(x => x.TaiKhoan)
+                .FirstOrDefaultAsync(x => x.MaKH == maKH);
+            if (khachHang?.TaiKhoan == null)
+            {
+                _logger.LogError("Customer account {CustomerId} was not found while placing an order.", maKH);
+                TempData["error"] = "Không thể xác định tài khoản khách hàng để gửi xác nhận đơn hàng.";
+                return RedirectToAction("Index", "GioHang");
+            }
             await using var tx = await _context.Database.BeginTransactionAsync();
             try
             {
@@ -230,6 +243,12 @@ namespace BanSach.Areas.Customer.Controllers
 
                 _context.DonHangs.Add(don);
                 await _context.SaveChangesAsync();
+                await _context.Entry(don).Collection(x => x.ChiTietDonHangs).Query()
+                    .Include(x => x.Sach)
+                    .LoadAsync();
+                _context.EmailOutbox.Add(
+                    OrderEmailOutboxFactory.Confirmation(don, khachHang.TaiKhoan.Email));
+                await _context.SaveChangesAsync();
                 await tx.CommitAsync();
                 _gioHang.XoaGio();
                 TempData["success"] = "Đặt hàng thành công!";
@@ -248,6 +267,13 @@ namespace BanSach.Areas.Customer.Controllers
 
                 _gioHang.XoaGio();
                 return RedirectToAction(nameof(ChiTiet), new { id = previousOrderId });
+            }
+            catch (Exception exception)
+            {
+                await tx.RollbackAsync();
+                _logger.LogError(exception, "Failed to place order for customer {CustomerId}.", maKH);
+                TempData["error"] = "Không thể đặt hàng. Vui lòng thử lại.";
+                return RedirectToAction("Index", "GioHang");
             }
         }
 
@@ -306,13 +332,26 @@ namespace BanSach.Areas.Customer.Controllers
                 return RedirectToAction(nameof(ChiTiet), new { id });
             }
 
+            var previousStatus = don.TrangThai;
             don.TrangThai = TrangThaiDonHang.DaHuy;
+            don.TrangThaiVersion++;
             foreach (var ct in don.ChiTietDonHangs)
             {
                 if (ct.Sach != null)
                 {
                     ct.Sach.SoLuongTon += ct.SoLuong;
                 }
+            }
+
+            var recipient = don.KhachHang?.TaiKhoan?.Email;
+            if (!string.IsNullOrWhiteSpace(recipient))
+            {
+                _context.EmailOutbox.Add(OrderEmailOutboxFactory.StatusChanged(
+                    don, previousStatus, don.TrangThai, recipient));
+            }
+            else
+            {
+                _logger.LogWarning("No customer email is available for order {OrderId}.", don.MaDH);
             }
 
             await _context.SaveChangesAsync();
@@ -325,6 +364,7 @@ namespace BanSach.Areas.Customer.Controllers
             var maKH = HttpContext.Session.GetInt32(SessionKeys.MaKH);
             if (id == null || maKH == null) return null;
             return await _context.DonHangs
+                .Include(x => x.KhachHang).ThenInclude(x => x!.TaiKhoan)
                 .Include(x => x.GiaoHang)
                 .Include(x => x.ChiTietDonHangs).ThenInclude(x => x.Sach)
                 .FirstOrDefaultAsync(x => x.MaDH == id && x.MaKH == maKH);

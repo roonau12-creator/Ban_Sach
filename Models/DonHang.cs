@@ -20,6 +20,8 @@ namespace BanSach.Models
         [Display(Name = "Trạng thái")]
         public string TrangThai { get; set; } = TrangThaiDonHang.ChoXacNhan;
 
+        public int TrangThaiVersion { get; set; }
+
         [Column(TypeName = "numeric(18,2)")]
         [Display(Name = "Tổng tiền")]
         public decimal TongTien { get; set; }

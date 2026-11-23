@@ -67,6 +67,24 @@ Chuỗi kết nối trong `appsettings.json`:
 > dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=...;Password=..."
 > ```
 
+### Gửi email đơn hàng
+
+Email được lưu vào outbox cùng giao dịch đặt hàng/cập nhật trạng thái và gửi nền qua SMTP. Các thông báo lỗi sẽ được thử lại tối đa 5 lần; trạng thái gửi và lỗi cuối cùng được lưu trong bảng `EmailOutbox`.
+
+Cấu hình SMTP bằng user-secrets hoặc biến môi trường, không ghi thông tin xác thực vào file cấu hình được commit:
+
+```text
+Email__SmtpHost
+Email__SmtpPort
+Email__Username
+Email__Password
+Email__FromAddress
+Email__FromName
+Email__EnableSsl
+```
+
+`SmtpHost` và `FromAddress` là bắt buộc. `Username` và `Password` phải được cung cấp cùng nhau khi máy chủ SMTP yêu cầu xác thực. Migration được áp dụng tự động khi ứng dụng khởi động.
+
 ## Cấu trúc dự án
 
 ```
