@@ -208,20 +208,20 @@ namespace BanSach.Areas.Customer.Controllers
                 }
 
                 var tongHang = items.Sum(x => sachTheoMa[x.MaSach].GiaBan * x.SoLuong);
+                var tongTien = tongHang - soTienGiam;
+                var ngayDat = DateTime.UtcNow;
                 var don = new DonHang
                 {
                     MaKH = maKH.Value,
-                    NgayDat = DateTime.UtcNow,
+                    NgayDat = ngayDat,
                     TrangThai = TrangThaiDonHang.ChoXacNhan,
                     MaYeuCau = model.MaYeuCau,
-                    TongTien = tongHang - soTienGiam,
+                    TongTien = tongTien,
                     SoTienGiam = soTienGiam,
                     MaKM = maKhuyenMai?.MaKM,
                     MaKhuyenMai = maKhuyenMai?.MaCode,
                     PhuongThucThanhToan = model.PhuongThucThanhToan,
-                    TrangThaiThanhToan = model.PhuongThucThanhToan == PhuongThucThanhToan.ChuyenKhoan
-                        ? TrangThaiThanhToan.DaThanhToan
-                        : TrangThaiThanhToan.ChuaThanhToan,
+                    TrangThaiThanhToan = TrangThaiThanhToan.ChuaThanhToan,
                     MaDC = diaChi.MaDC,
                     MaSDT = sdt.MaSDT,
                     DiaChiGiao = diaChi.DiaChiChiTiet,
@@ -233,6 +233,14 @@ namespace BanSach.Areas.Customer.Controllers
                         SoLuong = x.SoLuong,
                         DonGia = sachTheoMa[x.MaSach].GiaBan
                     }).ToList(),
+                    ThanhToan = new ThanhToan
+                    {
+                        SoTien = tongTien,
+                        PhuongThuc = model.PhuongThucThanhToan,
+                        TrangThai = TrangThaiThanhToan.ChuaThanhToan,
+                        NgayTao = ngayDat,
+                        NgayCapNhat = ngayDat
+                    },
                     GiaoHang = new GiaoHang
                     {
                         TrangThai = TrangThaiGiaoHang.ChoGiao
@@ -340,6 +348,12 @@ namespace BanSach.Areas.Customer.Controllers
                 return RedirectToAction(nameof(ChiTiet), new { id });
             }
 
+            if (don.TrangThaiThanhToan == TrangThaiThanhToan.DaThanhToan)
+            {
+                TempData["error"] = "Đơn đã thanh toán. Vui lòng liên hệ quản trị viên để xử lý hoàn tiền.";
+                return RedirectToAction(nameof(ChiTiet), new { id });
+            }
+
             var previousStatus = don.TrangThai;
             don.TrangThai = TrangThaiDonHang.DaHuy;
             don.TrangThaiVersion++;
@@ -379,6 +393,7 @@ namespace BanSach.Areas.Customer.Controllers
             return await _context.DonHangs
                 .Include(x => x.KhachHang).ThenInclude(x => x!.TaiKhoan)
                 .Include(x => x.GiaoHang)
+                .Include(x => x.ThanhToan)
                 .Include(x => x.ChiTietDonHangs).ThenInclude(x => x.Sach)
                 .FirstOrDefaultAsync(x => x.MaDH == id && x.MaKH == maKH);
         }

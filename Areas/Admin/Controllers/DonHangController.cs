@@ -4,6 +4,7 @@ using BanSach.Helpers;
 using BanSach.Services.Email;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace BanSach.Areas.Admin.Controllers
 {
@@ -54,6 +55,7 @@ namespace BanSach.Areas.Admin.Controllers
                 .Include(x => x.ChiTietDonHangs)
                     .ThenInclude(x => x.Sach)
                 .Include(x => x.GiaoHang)
+                .Include(x => x.ThanhToan)
                 .FirstOrDefaultAsync(x => x.MaDH == id);
             if (don == null) return NotFound();
 
@@ -95,7 +97,10 @@ namespace BanSach.Areas.Admin.Controllers
             {
                 don.GiaoHang.TrangThai = TrangThaiGiaoHang.DaGiao;
                 don.GiaoHang.NgayGiao = DateTime.UtcNow;
-                don.TrangThaiThanhToan = TrangThaiThanhToan.DaThanhToan;
+                if (don.PhuongThucThanhToan == PhuongThucThanhToan.COD)
+                {
+                    GhiNhanThanhToan(don, null);
+                }
             }
             else if (trangThai == TrangThaiDonHang.GiaoThatBai)
             {
@@ -125,9 +130,11 @@ namespace BanSach.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CapNhatThanhToan(int id, string trangThaiThanhToan)
+        public async Task<IActionResult> CapNhatThanhToan(int id, string trangThaiThanhToan, string? maGiaoDich)
         {
-            var don = await _context.DonHangs.FindAsync(id);
+            var don = await _context.DonHangs
+                .Include(x => x.ThanhToan)
+                .FirstOrDefaultAsync(x => x.MaDH == id);
             if (don == null) return NotFound();
             if (don.TrangThai == TrangThaiDonHang.DaHuy)
             {
@@ -135,11 +142,50 @@ namespace BanSach.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Details), new { id });
             }
 
-            don.TrangThaiThanhToan = trangThaiThanhToan == TrangThaiThanhToan.DaThanhToan
-                ? TrangThaiThanhToan.DaThanhToan
-                : TrangThaiThanhToan.ChuaThanhToan;
-            await _context.SaveChangesAsync();
-            TempData["success"] = "Đã cập nhật thanh toán.";
+            if (don.ThanhToan == null)
+            {
+                TempData["error"] = "Không tìm thấy giao dịch thanh toán của đơn hàng.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            try
+            {
+                don.ThanhToan.CapNhatTrangThai(trangThaiThanhToan, don.TongTien, DateTime.UtcNow, maGiaoDich);
+            }
+            catch (ArgumentException)
+            {
+                TempData["error"] = "Trạng thái hoặc mã giao dịch không hợp lệ.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["error"] = ex.Message;
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            don.TrangThaiThanhToan = don.ThanhToan.TrangThai;
+            if (!string.IsNullOrWhiteSpace(don.ThanhToan.MaGiaoDich)
+                && await _context.ThanhToans.AnyAsync(x =>
+                    x.MaTT != don.ThanhToan.MaTT && x.MaGiaoDich == don.ThanhToan.MaGiaoDich))
+            {
+                TempData["error"] = "Mã giao dịch này đã được ghi nhận cho đơn hàng khác.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (
+                ex.InnerException is PostgresException postgres
+                && postgres.SqlState == PostgresErrorCodes.UniqueViolation
+                && postgres.ConstraintName == "IX_ThanhToans_MaGiaoDich")
+            {
+                TempData["error"] = "Mã giao dịch này đã được ghi nhận cho đơn hàng khác.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            TempData["success"] = "Đã cập nhật giao dịch thanh toán.";
             return RedirectToAction(nameof(Details), new { id });
         }
 
@@ -147,7 +193,10 @@ namespace BanSach.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CapNhatGiaoHang(int id, string trangThai, string? ghiChu)
         {
-            var don = await _context.DonHangs.Include(x => x.GiaoHang).FirstOrDefaultAsync(x => x.MaDH == id);
+            var don = await _context.DonHangs
+                .Include(x => x.GiaoHang)
+                .Include(x => x.ThanhToan)
+                .FirstOrDefaultAsync(x => x.MaDH == id);
             if (don == null) return NotFound();
             var hopLe = new[]
             {
@@ -171,7 +220,10 @@ namespace BanSach.Areas.Admin.Controllers
             {
                 don.GiaoHang.NgayGiao = DateTime.UtcNow;
                 don.TrangThai = TrangThaiDonHang.DaGiao;
-                don.TrangThaiThanhToan = TrangThaiThanhToan.DaThanhToan;
+                if (don.PhuongThucThanhToan == PhuongThucThanhToan.COD)
+                {
+                    GhiNhanThanhToan(don, null);
+                }
             }
             else if (trangThai == TrangThaiGiaoHang.DangGiao)
             {
@@ -219,6 +271,7 @@ namespace BanSach.Areas.Admin.Controllers
             return await _context.DonHangs
                 .Include(x => x.KhachHang).ThenInclude(x => x!.TaiKhoan)
                 .Include(x => x.GiaoHang)
+                .Include(x => x.ThanhToan)
                 .Include(x => x.ChiTietDonHangs).ThenInclude(x => x.Sach)
                 .FirstOrDefaultAsync(x => x.MaDH == id);
         }
@@ -234,6 +287,21 @@ namespace BanSach.Areas.Admin.Controllers
 
             _context.EmailOutbox.Add(OrderEmailOutboxFactory.StatusChanged(
                 order, previousStatus, order.TrangThai, recipient));
+        }
+
+        private static void GhiNhanThanhToan(Models.DonHang don, string? maGiaoDich)
+        {
+            if (don.ThanhToan == null)
+            {
+                throw new InvalidOperationException("Không tìm thấy giao dịch thanh toán của đơn hàng.");
+            }
+
+            don.ThanhToan.CapNhatTrangThai(
+                TrangThaiThanhToan.DaThanhToan,
+                don.TongTien,
+                DateTime.UtcNow,
+                maGiaoDich);
+            don.TrangThaiThanhToan = don.ThanhToan.TrangThai;
         }
 
         private async Task CongTon(int maDH)

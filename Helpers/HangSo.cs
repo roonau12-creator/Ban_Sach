@@ -26,6 +26,7 @@ namespace BanSach.Helpers
     {
         public const string ChuaThanhToan = "ChuaThanhToan";
         public const string DaThanhToan = "DaThanhToan";
+        public const string ThatBai = "ThatBai";
     }
 
     public static class TrangThaiGiaoHang
@@ -80,6 +81,7 @@ namespace BanSach.Helpers
         {
             TrangThaiThanhToan.DaThanhToan => "Đã thanh toán",
             TrangThaiThanhToan.ChuaThanhToan => "Chưa thanh toán",
+            TrangThaiThanhToan.ThatBai => "Thanh toán thất bại",
             _ => value ?? ""
         };
 
