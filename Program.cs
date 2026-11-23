@@ -19,6 +19,7 @@ builder.Services.AddScoped<SessionGioHang>();
 builder.Services.AddScoped<GioHangService>();
 builder.Services.AddScoped<AnhBiaHelper>();
 builder.Services.AddScoped<SachExcelService>();
+builder.Services.AddScoped<ThongBaoService>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
 builder.Services.AddHostedService<EmailOutboxWorker>();

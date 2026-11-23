@@ -120,6 +120,7 @@ BanSach/
 │       │   ├── SachController.cs
 │       │   ├── GioHangController.cs
 │       │   ├── DonHangController.cs
+│       │   ├── ThongBaoController.cs
 │       │   ├── TaiKhoanController.cs
 │       │   ├── DiaChiController.cs
 │       │   └── SoDienThoaiController.cs
@@ -128,6 +129,7 @@ BanSach/
 │           ├── Sach/
 │           ├── GioHang/
 │           ├── DonHang/
+│           ├── ThongBao/
 │           ├── TaiKhoan/     (DangNhap, DangKy, QuenMatKhau, ...)
 │           ├── DiaChi/
 │           ├── SoDienThoai/
@@ -145,7 +147,8 @@ BanSach/
 │   └── DbSeeder.cs                   # Seed dữ liệu mẫu khi khởi động
 ├── Migrations/
 │   ├── 20260913024742_ChuDe.cs
-│   └── 20260914005958_FullSchema.cs
+│   ├── 20260914005958_FullSchema.cs
+│   └── 20261118000000_ThongBao.cs
 ├── Models/
 │   ├── Sach.cs
 │   ├── ChuDe.cs
@@ -159,6 +162,7 @@ BanSach/
 │       ├── KhuyenMai.cs
 │   ├── ChiTietDonHang.cs
 │   ├── GiaoHang.cs
+│   ├── ThongBao.cs
 │   ├── DiaChi.cs
 │   ├── SoDienThoai.cs
 │   ├── GioHangItem.cs

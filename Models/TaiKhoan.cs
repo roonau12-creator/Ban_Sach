@@ -37,5 +37,6 @@ namespace BanSach.Models
 
         public KhachHang? KhachHang { get; set; }
         public ICollection<DanhGia> DanhGias { get; set; } = new List<DanhGia>();
+        public ICollection<ThongBao> ThongBaos { get; set; } = new List<ThongBao>();
     }
 }

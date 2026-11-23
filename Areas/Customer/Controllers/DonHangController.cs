@@ -19,17 +19,20 @@ namespace BanSach.Areas.Customer.Controllers
         private readonly SessionGioHang _gioHang;
         private readonly GioHangService _gioHangService;
         private readonly ILogger<DonHangController> _logger;
+        private readonly ThongBaoService _thongBaoService;
 
         public DonHangController(
             ApplicationDbContext context,
             SessionGioHang gioHang,
             GioHangService gioHangService,
-            ILogger<DonHangController> logger)
+            ILogger<DonHangController> logger,
+            ThongBaoService thongBaoService)
         {
             _context = context;
             _gioHang = gioHang;
             _gioHangService = gioHangService;
             _logger = logger;
+            _thongBaoService = thongBaoService;
         }
 
         public async Task<IActionResult> DatHang()
@@ -248,6 +251,11 @@ namespace BanSach.Areas.Customer.Controllers
                     .LoadAsync();
                 _context.EmailOutbox.Add(
                     OrderEmailOutboxFactory.Confirmation(don, khachHang.TaiKhoan.Email));
+                await _thongBaoService.TaoChoQuanTriVienAsync(
+                    don,
+                    $"order:{don.MaDH}:placed",
+                    "Có đơn hàng mới",
+                    $"Đơn hàng #{don.MaDH} vừa được đặt.");
                 await _context.SaveChangesAsync();
                 await tx.CommitAsync();
                 _gioHang.XoaGio();
@@ -354,6 +362,11 @@ namespace BanSach.Areas.Customer.Controllers
                 _logger.LogWarning("No customer email is available for order {OrderId}.", don.MaDH);
             }
 
+            await _thongBaoService.TaoChoQuanTriVienAsync(
+                don,
+                $"order:{don.MaDH}:status:{previousStatus}:{don.TrangThai}",
+                "Khách hàng đã hủy đơn hàng",
+                $"Đơn hàng #{don.MaDH} đã được khách hàng hủy.");
             await _context.SaveChangesAsync();
             TempData["success"] = "Đã hủy đơn hàng.";
             return RedirectToAction(nameof(ChiTiet), new { id });

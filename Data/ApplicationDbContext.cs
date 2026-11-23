@@ -25,6 +25,7 @@ namespace BanSach.Data
         public DbSet<DanhGia> DanhGias { get; set; }
         public DbSet<KhuyenMai> KhuyenMais { get; set; }
         public DbSet<EmailOutbox> EmailOutbox { get; set; }
+        public DbSet<ThongBao> ThongBaos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -129,6 +130,25 @@ namespace BanSach.Data
             modelBuilder.Entity<DonHang>()
                 .Property(x => x.TrangThaiVersion)
                 .IsConcurrencyToken();
+
+            modelBuilder.Entity<ThongBao>()
+                .HasIndex(x => new { x.MaTK, x.MaSuKien })
+                .IsUnique();
+
+            modelBuilder.Entity<ThongBao>()
+                .HasIndex(x => new { x.MaTK, x.An, x.DaDoc });
+
+            modelBuilder.Entity<ThongBao>()
+                .HasOne(x => x.TaiKhoan)
+                .WithMany(x => x.ThongBaos)
+                .HasForeignKey(x => x.MaTK)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ThongBao>()
+                .HasOne(x => x.DonHang)
+                .WithMany(x => x.ThongBaos)
+                .HasForeignKey(x => x.MaDH)
+                .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<ChiTietDonHang>()
                 .HasOne(x => x.DonHang)

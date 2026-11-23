@@ -609,6 +609,56 @@ namespace BanSach.Migrations
                     b.ToTable("TaiKhoans");
                 });
 
+            modelBuilder.Entity("BanSach.Models.ThongBao", b =>
+                {
+                    b.Property<int>("MaTB")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("MaTB"));
+
+                    b.Property<bool>("An")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("DaDoc")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("MaDH")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaTK")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MaSuKien")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("NgayTao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("NoiDung")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("TieuDe")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.HasKey("MaTB");
+
+                    b.HasIndex("MaDH");
+
+                    b.HasIndex("MaTK", "An", "DaDoc");
+
+                    b.HasIndex("MaTK", "MaSuKien")
+                        .IsUnique();
+
+                    b.ToTable("ThongBaos");
+                });
+
             modelBuilder.Entity("BanSach.Models.ChiTietDonHang", b =>
                 {
                     b.HasOne("BanSach.Models.DonHang", "DonHang")
@@ -819,6 +869,34 @@ namespace BanSach.Migrations
                     b.Navigation("DanhGias");
 
                     b.Navigation("KhachHang");
+                });
+
+            modelBuilder.Entity("BanSach.Models.ThongBao", b =>
+                {
+                    b.HasOne("BanSach.Models.DonHang", "DonHang")
+                        .WithMany("ThongBaos")
+                        .HasForeignKey("MaDH")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BanSach.Models.TaiKhoan", "TaiKhoan")
+                        .WithMany("ThongBaos")
+                        .HasForeignKey("MaTK")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DonHang");
+
+                    b.Navigation("TaiKhoan");
+                });
+
+            modelBuilder.Entity("BanSach.Models.DonHang", b =>
+                {
+                    b.Navigation("ThongBaos");
+                });
+
+            modelBuilder.Entity("BanSach.Models.TaiKhoan", b =>
+                {
+                    b.Navigation("ThongBaos");
                 });
 #pragma warning restore 612, 618
         }

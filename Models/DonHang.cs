@@ -67,5 +67,6 @@ namespace BanSach.Models
         public KhuyenMai? KhuyenMai { get; set; }
         public ICollection<ChiTietDonHang> ChiTietDonHangs { get; set; } = new List<ChiTietDonHang>();
         public GiaoHang? GiaoHang { get; set; }
+        public ICollection<ThongBao> ThongBaos { get; set; } = new List<ThongBao>();
     }
 }

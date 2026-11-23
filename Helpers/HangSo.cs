@@ -13,6 +13,7 @@ namespace BanSach.Helpers
         public const string DangGiao = "DangGiao";
         public const string DaGiao = "DaGiao";
         public const string DaHuy = "DaHuy";
+        public const string GiaoThatBai = "GiaoThatBai";
     }
 
     public static class PhuongThucThanhToan
@@ -32,6 +33,7 @@ namespace BanSach.Helpers
         public const string ChoGiao = "ChoGiao";
         public const string DangGiao = "DangGiao";
         public const string DaGiao = "DaGiao";
+        public const string ThatBai = "ThatBai";
     }
 
     public static class LoaiGiamGiaKhuyenMai
@@ -59,6 +61,7 @@ namespace BanSach.Helpers
             TrangThaiDonHang.DangGiao => "Đang giao",
             TrangThaiDonHang.DaGiao => "Đã giao",
             TrangThaiDonHang.DaHuy => "Đã hủy",
+            TrangThaiDonHang.GiaoThatBai => "Giao thất bại",
             _ => value ?? ""
         };
 
@@ -69,6 +72,7 @@ namespace BanSach.Helpers
             TrangThaiDonHang.DangGiao => "bg-primary",
             TrangThaiDonHang.DaGiao => "bg-success",
             TrangThaiDonHang.DaHuy => "bg-secondary",
+            TrangThaiDonHang.GiaoThatBai => "bg-danger",
             _ => "bg-light text-dark"
         };
 
@@ -91,6 +95,7 @@ namespace BanSach.Helpers
             TrangThaiGiaoHang.ChoGiao => "Chờ giao",
             TrangThaiGiaoHang.DangGiao => "Đang giao",
             TrangThaiGiaoHang.DaGiao => "Đã giao",
+            TrangThaiGiaoHang.ThatBai => "Giao thất bại",
             _ => value ?? ""
         };
 

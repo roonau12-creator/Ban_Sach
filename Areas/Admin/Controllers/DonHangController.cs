@@ -13,11 +13,16 @@ namespace BanSach.Areas.Admin.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<DonHangController> _logger;
+        private readonly ThongBaoService _thongBaoService;
 
-        public DonHangController(ApplicationDbContext context, ILogger<DonHangController> logger)
+        public DonHangController(
+            ApplicationDbContext context,
+            ILogger<DonHangController> logger,
+            ThongBaoService thongBaoService)
         {
             _context = context;
             _logger = logger;
+            _thongBaoService = thongBaoService;
         }
 
         public async Task<IActionResult> Index(string? trangThai)
@@ -58,6 +63,7 @@ namespace BanSach.Areas.Admin.Controllers
                 TrangThaiDonHang.DaXacNhan,
                 TrangThaiDonHang.DangGiao,
                 TrangThaiDonHang.DaGiao,
+                TrangThaiDonHang.GiaoThatBai,
                 TrangThaiDonHang.DaHuy
             };
             if (!hopLe.Contains(trangThai))
@@ -91,6 +97,10 @@ namespace BanSach.Areas.Admin.Controllers
                 don.GiaoHang.NgayGiao = DateTime.UtcNow;
                 don.TrangThaiThanhToan = TrangThaiThanhToan.DaThanhToan;
             }
+            else if (trangThai == TrangThaiDonHang.GiaoThatBai)
+            {
+                don.GiaoHang.TrangThai = TrangThaiGiaoHang.ThatBai;
+            }
             else if (trangThai == TrangThaiDonHang.DaHuy)
             {
                 don.GiaoHang.TrangThai = TrangThaiGiaoHang.ChoGiao;
@@ -100,6 +110,12 @@ namespace BanSach.Areas.Admin.Controllers
             {
                 don.TrangThaiVersion++;
                 AddStatusNotification(don, previousStatus);
+                var suKien = $"order:{don.MaDH}:status:{previousStatus}:{don.TrangThai}";
+                var tieuDe = don.TrangThai == TrangThaiDonHang.DaXacNhan
+                    ? "Đơn hàng đã được xác nhận"
+                    : "Trạng thái đơn hàng đã thay đổi";
+                var noiDung = $"Đơn hàng #{don.MaDH}: {HienThi.TrangThaiDon(previousStatus)} → {HienThi.TrangThaiDon(don.TrangThai)}.";
+                await _thongBaoService.TaoChoKhachHangAsync(don, suKien, tieuDe, noiDung);
             }
 
             await _context.SaveChangesAsync();
@@ -133,7 +149,21 @@ namespace BanSach.Areas.Admin.Controllers
         {
             var don = await _context.DonHangs.Include(x => x.GiaoHang).FirstOrDefaultAsync(x => x.MaDH == id);
             if (don == null) return NotFound();
+            var hopLe = new[]
+            {
+                TrangThaiGiaoHang.ChoGiao,
+                TrangThaiGiaoHang.DangGiao,
+                TrangThaiGiaoHang.DaGiao,
+                TrangThaiGiaoHang.ThatBai
+            };
+            if (!hopLe.Contains(trangThai))
+            {
+                TempData["error"] = "Trạng thái giao hàng không hợp lệ.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
             don.GiaoHang ??= new Models.GiaoHang { MaDH = don.MaDH, DonHang = don };
+            var trangThaiGiaoHangCu = don.GiaoHang.TrangThai;
             don.GiaoHang.TrangThai = trangThai;
             don.GiaoHang.GhiChu = ghiChu;
             var previousStatus = don.TrangThai;
@@ -146,6 +176,23 @@ namespace BanSach.Areas.Admin.Controllers
             else if (trangThai == TrangThaiGiaoHang.DangGiao)
             {
                 don.TrangThai = TrangThaiDonHang.DangGiao;
+            }
+            else if (trangThai == TrangThaiGiaoHang.ThatBai)
+            {
+                don.TrangThai = TrangThaiDonHang.GiaoThatBai;
+            }
+
+            if (trangThaiGiaoHangCu != trangThai)
+            {
+                var suKien = $"order:{don.MaDH}:delivery:{trangThaiGiaoHangCu}:{trangThai}";
+                var tieuDe = trangThai switch
+                {
+                    TrangThaiGiaoHang.DaGiao => "Đơn hàng đã được giao thành công",
+                    TrangThaiGiaoHang.ThatBai => "Giao hàng không thành công",
+                    _ => "Trạng thái giao hàng đã thay đổi"
+                };
+                var noiDung = $"Đơn hàng #{don.MaDH}: {HienThi.GiaoHang(trangThaiGiaoHangCu)} → {HienThi.GiaoHang(trangThai)}.";
+                await _thongBaoService.TaoChoKhachHangAsync(don, suKien, tieuDe, noiDung);
             }
 
             if (previousStatus != don.TrangThai)
