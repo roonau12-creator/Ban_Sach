@@ -51,6 +51,47 @@ namespace BanSach.Migrations
                     b.ToTable("ChiTietDonHangs");
                 });
 
+            modelBuilder.Entity("BanSach.Models.DanhGia", b =>
+                {
+                    b.Property<int>("MaDG")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("MaDG"));
+
+                    b.Property<bool>("An")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MaSach")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaTK")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("NgayDanhGia")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("NoiDung")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("SoSao")
+                        .HasColumnType("integer");
+
+                    b.HasKey("MaDG");
+
+                    b.HasIndex("MaSach", "An");
+
+                    b.HasIndex("MaTK", "MaSach")
+                        .IsUnique();
+
+                    b.ToTable("DanhGias", t =>
+                        {
+                            t.HasCheckConstraint("CK_DanhGias_SoSao", "\"SoSao\" BETWEEN 1 AND 5");
+                        });
+                });
+
             modelBuilder.Entity("BanSach.Models.ChuDe", b =>
                 {
                     b.Property<int>("MaCD")
@@ -489,6 +530,25 @@ namespace BanSach.Migrations
                     b.Navigation("SoDienThoai");
                 });
 
+            modelBuilder.Entity("BanSach.Models.DanhGia", b =>
+                {
+                    b.HasOne("BanSach.Models.Sach", "Sach")
+                        .WithMany("DanhGias")
+                        .HasForeignKey("MaSach")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BanSach.Models.TaiKhoan", "TaiKhoan")
+                        .WithMany("DanhGias")
+                        .HasForeignKey("MaTK")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Sach");
+
+                    b.Navigation("TaiKhoan");
+                });
+
             modelBuilder.Entity("BanSach.Models.GiaoHang", b =>
                 {
                     b.HasOne("BanSach.Models.DonHang", "DonHang")
@@ -603,6 +663,8 @@ namespace BanSach.Migrations
                 {
                     b.Navigation("ChiTietDonHangs");
 
+                    b.Navigation("DanhGias");
+
                     b.Navigation("SachTacGias");
                 });
 
@@ -613,9 +675,16 @@ namespace BanSach.Migrations
 
             modelBuilder.Entity("BanSach.Models.TaiKhoan", b =>
                 {
+                    b.Navigation("DanhGias");
+
                     b.Navigation("KhachHang");
                 });
 #pragma warning restore 612, 618
+        }
+
+        internal static void BuildTargetModel(ModelBuilder modelBuilder)
+        {
+            new ApplicationDbContextModelSnapshot().BuildModel(modelBuilder);
         }
     }
 }

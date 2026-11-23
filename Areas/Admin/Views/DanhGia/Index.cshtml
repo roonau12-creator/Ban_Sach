@@ -1,0 +1,73 @@
+@model IEnumerable<BanSach.Models.DanhGia>
+@{
+    ViewData["Title"] = "Quản lý đánh giá";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Quản lý đánh giá</h2>
+        <p class="text-muted mb-0">Ẩn hoặc hiện các nhận xét vi phạm.</p>
+    </div>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <select name="an" class="form-select">
+            <option value="">Tất cả đánh giá</option>
+            <option value="false" selected="@(Context.Request.Query["an"].ToString() == "false" ? "selected" : null)">Đang hiển thị</option>
+            <option value="true" selected="@(Context.Request.Query["an"].ToString() == "true" ? "selected" : null)">Đã ẩn</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-dark">Lọc</button>
+    </div>
+</form>
+
+@if (!Model.Any())
+{
+    <p class="text-muted">Không có đánh giá nào.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Sách</th>
+                    <th>Khách hàng</th>
+                    <th>Điểm</th>
+                    <th>Nhận xét</th>
+                    <th>Ngày gửi</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Sach?.TenSach</td>
+                        <td>@(item.TaiKhoan?.KhachHang?.HoTen ?? item.TaiKhoan?.TenDangNhap)</td>
+                        <td>@item.SoSao / 5</td>
+                        <td class="text-break" style="min-width:240px">@item.NoiDung</td>
+                        <td>@item.NgayDanhGia.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            <span class="badge @(item.An ? "bg-secondary" : "bg-success")">
+                                @(item.An ? "Đã ẩn" : "Đang hiển thị")
+                            </span>
+                        </td>
+                        <td>
+                            <form asp-area="Admin" asp-controller="DanhGia" asp-action="DoiTrangThaiAn" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.MaDG" />
+                                <button type="submit" class="btn btn-sm @(item.An ? "btn-outline-success" : "btn-outline-danger")">
+                                    @(item.An ? "Hiện" : "Ẩn")
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

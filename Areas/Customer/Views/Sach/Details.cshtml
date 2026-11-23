@@ -1,12 +1,13 @@
-@model BanSach.Models.Sach
+@model BanSach.Models.ViewModels.ChiTietSachViewModel
 @{
-    ViewData["Title"] = Model.TenSach;
+    ViewData["Title"] = Model.Sach.TenSach;
+    var tacGia = string.Join(", ", Model.Sach.SachTacGias.Select(x => x.TacGia?.TenTacGia).Where(x => !string.IsNullOrEmpty(x)));
 }
 <div class="row g-4">
     <div class="col-md-4">
-        @if (!string.IsNullOrEmpty(Model.AnhBia))
+        @if (!string.IsNullOrEmpty(Model.Sach.AnhBia))
         {
-            <img src="@Model.AnhBia" class="img-fluid rounded shadow-sm" alt="@Model.TenSach" />
+            <img src="@Model.Sach.AnhBia" class="img-fluid rounded shadow-sm" alt="@Model.Sach.TenSach" />
         }
         else
         {
@@ -14,40 +15,37 @@
         }
     </div>
     <div class="col-md-8">
-        <h1 class="fw-bold">@Model.TenSach</h1>
+        <h1 class="fw-bold">@Model.Sach.TenSach</h1>
         <p class="text-muted">
-            @Model.ChuDe?.TenChuDe · @Model.NhomSach?.TenNhom · @Model.NhaXuatBan?.TenNXB
+            @Model.Sach.ChuDe?.TenChuDe · @Model.Sach.NhomSach?.TenNhom · @Model.Sach.NhaXuatBan?.TenNXB
         </p>
-        @{
-            var tacGia = string.Join(", ", Model.SachTacGias.Select(x => x.TacGia?.TenTacGia).Where(x => !string.IsNullOrEmpty(x)));
-        }
         <p>
             <strong>Tác giả:</strong>
             @(string.IsNullOrEmpty(tacGia) ? "Đang cập nhật" : tacGia)
         </p>
-        <p><strong>Năm XB:</strong> @(Model.NamXB?.ToString() ?? "—")</p>
-        <p class="price fs-3">@HienThi.Tien(Model.GiaBan)</p>
+        <p><strong>Năm XB:</strong> @(Model.Sach.NamXB?.ToString() ?? "—")</p>
+        <p class="price fs-3">@HienThi.Tien(Model.Sach.GiaBan)</p>
         <p>
             Tình trạng:
-            @if (Model.SoLuongTon > 0)
+            @if (Model.Sach.SoLuongTon > 0)
             {
                 <span class="badge bg-success">Còn hàng</span>
-                <span>(còn @Model.SoLuongTon cuốn)</span>
+                <span>(còn @Model.Sach.SoLuongTon cuốn)</span>
             }
             else
             {
                 <span class="badge bg-secondary">Hết hàng</span>
             }
         </p>
-        @if (Model.SachMoi) { <span class="badge bg-success">Sách mới</span> }
-        @if (Model.NoiBat) { <span class="badge bg-warning text-dark">Nổi bật</span> }
-        <p class="mt-3">@Model.MoTa</p>
-        @if (Model.SoLuongTon > 0)
+        @if (Model.Sach.SachMoi) { <span class="badge bg-success">Sách mới</span> }
+        @if (Model.Sach.NoiBat) { <span class="badge bg-warning text-dark">Nổi bật</span> }
+        <p class="mt-3">@Model.Sach.MoTa</p>
+        @if (Model.Sach.SoLuongTon > 0)
         {
             <form asp-area="Customer" asp-controller="GioHang" asp-action="Them" method="post" class="d-flex gap-2 mt-3" style="max-width:320px">
                 @Html.AntiForgeryToken()
-                <input type="hidden" name="maSach" value="@Model.MaSach" />
-                <input type="number" name="soLuong" value="1" min="1" max="@Model.SoLuongTon" class="form-control" />
+                <input type="hidden" name="maSach" value="@Model.Sach.MaSach" />
+                <input type="number" name="soLuong" value="1" min="1" max="@Model.Sach.SoLuongTon" class="form-control" />
                 <button class="btn btn-dark">Thêm vào giỏ</button>
             </form>
         }
@@ -57,3 +55,78 @@
         }
     </div>
 </div>
+
+<section class="mt-5" id="danh-gia">
+    <h2 class="fw-bold">Đánh giá của khách hàng</h2>
+    @if (Model.DanhGias.Count == 0)
+    {
+        <p class="text-muted">Chưa có đánh giá nào cho sách này.</p>
+    }
+    else
+    {
+        <p class="text-muted">
+            Điểm trung bình: <strong>@Model.DiemTrungBinh.ToString("0.0") / 5</strong>
+            (@Model.DanhGias.Count đánh giá)
+        </p>
+        @foreach (var danhGia in Model.DanhGias)
+        {
+            <article class="border rounded p-3 mb-3">
+                <div class="d-flex justify-content-between flex-wrap gap-2">
+                    <strong>Khách hàng đã mua</strong>
+                    <time class="text-muted" datetime="@danhGia.NgayDanhGia.ToString("O")">
+                        @danhGia.NgayDanhGia.ToLocalTime().ToString("dd/MM/yyyy")
+                    </time>
+                </div>
+                <p class="text-warning mb-2" aria-label="@danhGia.SoSao sao trên 5">
+                    @for (var sao = 0; sao < danhGia.SoSao; sao++)
+                    {
+                        <i class="bi bi-star-fill"></i>
+                    }
+                </p>
+                <p class="mb-0">@danhGia.NoiDung</p>
+            </article>
+        }
+    }
+
+    @if (Model.CoTheDanhGia)
+    {
+        <form asp-area="Customer" asp-controller="Sach" asp-action="GuiDanhGia" method="post" class="border rounded p-3 mt-4">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.Sach.MaSach" />
+            <h3 class="h5">Gửi đánh giá</h3>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="mb-3">
+                <label asp-for="DanhGiaMoi.SoSao" class="form-label"></label>
+                <select asp-for="DanhGiaMoi.SoSao" class="form-select">
+                    <option value="5">5 sao</option>
+                    <option value="4">4 sao</option>
+                    <option value="3">3 sao</option>
+                    <option value="2">2 sao</option>
+                    <option value="1">1 sao</option>
+                </select>
+                <span asp-validation-for="DanhGiaMoi.SoSao" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="DanhGiaMoi.NoiDung" class="form-label"></label>
+                <textarea asp-for="DanhGiaMoi.NoiDung" class="form-control" rows="4" maxlength="2000"></textarea>
+                <span asp-validation-for="DanhGiaMoi.NoiDung" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-dark">Gửi nhận xét</button>
+        </form>
+    }
+    else if (!Model.DaDangNhap)
+    {
+        <p class="mt-4">
+            <a asp-area="Customer" asp-controller="TaiKhoan" asp-action="DangNhap">Đăng nhập</a>
+            để đánh giá sách sau khi mua và nhận hàng.
+        </p>
+    }
+    else if (Model.DaDanhGia)
+    {
+        <p class="text-muted mt-4">Bạn đã đánh giá sách này.</p>
+    }
+    else
+    {
+        <p class="text-muted mt-4">Chỉ khách hàng đã mua và nhận sách mới có thể đánh giá.</p>
+    }
+</section>
