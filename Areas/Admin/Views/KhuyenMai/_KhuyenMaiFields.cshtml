@@ -1,0 +1,51 @@
+@model BanSach.Models.KhuyenMai
+<div class="mb-3">
+    <label asp-for="MaCode" class="form-label"></label>
+    <input asp-for="MaCode" class="form-control" autocomplete="off" />
+    <span asp-validation-for="MaCode" class="text-danger"></span>
+</div>
+<div class="mb-3">
+    <label asp-for="TenKhuyenMai" class="form-label"></label>
+    <input asp-for="TenKhuyenMai" class="form-control" />
+    <span asp-validation-for="TenKhuyenMai" class="text-danger"></span>
+</div>
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <label asp-for="LoaiGiamGia" class="form-label"></label>
+        <select asp-for="LoaiGiamGia" class="form-select">
+            <option value="@LoaiGiamGiaKhuyenMai.PhanTram">Phần trăm</option>
+            <option value="@LoaiGiamGiaKhuyenMai.SoTien">Số tiền cố định</option>
+        </select>
+        <span asp-validation-for="LoaiGiamGia" class="text-danger"></span>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label asp-for="GiaTriGiam" class="form-label"></label>
+        <input asp-for="GiaTriGiam" class="form-control" type="number" min="0.01" step="0.01" />
+        <span asp-validation-for="GiaTriGiam" class="text-danger"></span>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label asp-for="GiamToiDa" class="form-label"></label>
+        <input asp-for="GiamToiDa" class="form-control" type="number" min="0.01" step="0.01" />
+        <span asp-validation-for="GiamToiDa" class="text-danger"></span>
+    </div>
+</div>
+<div class="mb-3">
+    <label asp-for="DonHangToiThieu" class="form-label"></label>
+    <input asp-for="DonHangToiThieu" class="form-control" type="number" min="0" step="0.01" />
+    <span asp-validation-for="DonHangToiThieu" class="text-danger"></span>
+</div>
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="NgayBatDau" class="form-label"></label>
+        <input asp-for="NgayBatDau" type="datetime-local" class="form-control"
+               value="@Model.NgayBatDau.ToString("yyyy-MM-ddTHH:mm")" />
+        <span asp-validation-for="NgayBatDau" class="text-danger"></span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="NgayKetThuc" class="form-label"></label>
+        <input asp-for="NgayKetThuc" type="datetime-local" class="form-control"
+               value="@Model.NgayKetThuc.ToString("yyyy-MM-ddTHH:mm")" />
+        <span asp-validation-for="NgayKetThuc" class="text-danger"></span>
+    </div>
+</div>
+<div class="form-text">Thời gian bắt đầu và kết thúc được nhập theo UTC. Mỗi đơn chỉ áp dụng một mã.</div>

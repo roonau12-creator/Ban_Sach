@@ -34,6 +34,12 @@ namespace BanSach.Helpers
         public const string DaGiao = "DaGiao";
     }
 
+    public static class LoaiGiamGiaKhuyenMai
+    {
+        public const string PhanTram = "PhanTram";
+        public const string SoTien = "SoTien";
+    }
+
     public static class SessionKeys
     {
         public const string MaTK = "MaTK";

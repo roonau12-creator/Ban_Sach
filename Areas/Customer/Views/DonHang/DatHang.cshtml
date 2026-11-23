@@ -32,7 +32,19 @@
                         <label asp-for="GhiChu" class="form-label fw-bold"></label>
                         <textarea asp-for="GhiChu" class="form-control" rows="3"></textarea>
                     </div>
-                    <button class="btn btn-dark btn-lg">Xác nhận đặt hàng</button>
+                    <div class="mb-3">
+                        <label asp-for="MaKhuyenMai" class="form-label fw-bold"></label>
+                        <div class="input-group">
+                            <input asp-for="MaKhuyenMai" class="form-control" placeholder="Nhập mã khuyến mãi" />
+                            <button class="btn btn-outline-primary" type="submit" name="hanhDong" value="ap-dung" formnovalidate>Áp dụng</button>
+                        </div>
+                        <span asp-validation-for="MaKhuyenMai" class="text-danger"></span>
+                        @if (Model.GiamGia > 0)
+                        {
+                            <div class="form-text text-success">Mã @Model.MaKhuyenMai đã được áp dụng. Mỗi đơn hàng chỉ dùng một mã khuyến mãi.</div>
+                        }
+                    </div>
+                    <button class="btn btn-dark btn-lg" type="submit" name="hanhDong" value="dat-hang">Xác nhận đặt hàng</button>
                 </form>
             </div>
         </div>
@@ -49,6 +61,17 @@
                     </div>
                 }
                 <hr />
+                <div class="d-flex justify-content-between">
+                    <span>Tạm tính:</span>
+                    <span>@HienThi.Tien(Model.TongHang)</span>
+                </div>
+                @if (Model.GiamGia > 0)
+                {
+                    <div class="d-flex justify-content-between text-success">
+                        <span>Giảm giá:</span>
+                        <span>-@HienThi.Tien(Model.GiamGia)</span>
+                    </div>
+                }
                 <div class="fw-bold">Tổng: @HienThi.Tien(Model.TongTien)</div>
             </div>
         </div>

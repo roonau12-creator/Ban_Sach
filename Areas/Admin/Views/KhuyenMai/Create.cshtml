@@ -1,0 +1,25 @@
+@model BanSach.Models.KhuyenMai
+@{
+    ViewData["Title"] = "Tạo khuyến mãi";
+}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header fw-bold">Tạo chương trình khuyến mãi</div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <partial name="_KhuyenMaiFields" model="Model" />
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+                        <button type="submit" class="btn btn-primary">Tạo chương trình</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
